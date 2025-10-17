@@ -114,7 +114,7 @@ export default function Home() {
 
         <div className="mt-6 pt-6 border-t border-border">
           <Link href="/complete-pipeline">
-            <Button className="w-full">
+            <Button className="w-full flex items-center justify-center">
               <Layers className="w-4 h-4 mr-2" />
               Try Complete Pipeline
             </Button>
