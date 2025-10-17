@@ -3,9 +3,7 @@ import {
   ClerkProvider,
   SignInButton,
   SignUpButton,
-  SignedIn,
   SignedOut,
-  UserButton,
 } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -18,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Story Pipeline - AI-Powered Storytelling",
+  title: "Nzonzing",
   description: "Transform short story summaries into rich narratives with AI-generated scenes and image prompts",
 };
 
@@ -42,9 +40,6 @@ export default function RootLayout({
                 </SignUpButton>
               </div>
             </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
           </header>
           <div className="flex">
             <Sidebar />

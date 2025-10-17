@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
+import { UserButton } from '@clerk/nextjs';
 import {
   Layers,
   Sparkles,
@@ -19,9 +20,6 @@ import {
   Clapperboard,
   FileText,
   ChevronDown,
-  User,
-  Settings,
-  LogOut,
 } from 'lucide-react';
 
 const navItems = [
@@ -86,7 +84,6 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -333,46 +330,16 @@ export function Sidebar() {
         </nav>
 
         {/* User Profile Section */}
-        <div className="p-4 border-t border-border relative">
-          {isUserMenuOpen && (
-            <div className="absolute bottom-full mb-2 w-full left-0 p-2">
-              <div className="bg-sidebar-bg border border-border rounded-md shadow-lg">
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:bg-hover rounded-md"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Settings</span>
-                </Link>
-                <Link
-                  href="/profile"
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:bg-hover rounded-md"
-                >
-                  <User className="w-4 h-4" />
-                  <span>Profile</span>
-                </Link>
-                <button className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-hover rounded-md">
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </button>
-              </div>
-            </div>
-          )}
-          <button
-            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-hover"
-          >
-            <User className="w-8 h-8 rounded-full bg-gray-500 flex-shrink-0" />
-            <div
-              className={clsx(
-                'flex-1 text-left overflow-hidden transition-all',
-                isCollapsed && 'lg:w-0 lg:opacity-0'
-              )}
-            >
-              <p className="font-semibold text-sm text-foreground whitespace-nowrap">Guest</p>
-              <p className="text-xs text-text-secondary whitespace-nowrap">View profile</p>
-            </div>
-          </button>
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center justify-center">
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-10 h-10"
+                }
+              }}
+            />
+          </div>
         </div>
 
         {/* Footer */}
