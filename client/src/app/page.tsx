@@ -180,7 +180,7 @@ export default function Home() {
         </Card>
 
         {/* Stats Section */}
-        {seriesInProgress && (
+        {/* {seriesInProgress && (
           <Card>
             <CardHeader title="Your Creative Stats" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -197,7 +197,7 @@ export default function Home() {
               <div className="text-center p-4 bg-hover rounded-lg">
                 <Users className="w-6 h-6 text-primary-accent mx-auto mb-2" />
                 <div className="text-2xl font-bold text-foreground">
-                  {seriesInProgress.seriesContext.masterCharacters.length}
+                  {seriesInProgress.seriesContext.masterCharacters?.length}
                 </div>
                 <div className="text-xs text-text-secondary">Characters</div>
               </div>
@@ -210,7 +210,7 @@ export default function Home() {
               </div>
             </div>
           </Card>
-        )}
+        )} */}
 
         {/* All Tools Section (Expandable) */}
         <Card>
