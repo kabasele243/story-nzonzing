@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { mastra } from '../../storyteller/src/mastra';
+import { createSupabaseClient, requireAuth } from './lib/supabase';
+import { DatabaseService } from './services/database';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -143,15 +145,16 @@ app.post('/api/generate-scenes', async (req: Request, res: Response) => {
   }
 });
 
-// 3. Complete Pipeline Endpoint (Story Summary → Scenes)
-app.post('/api/story-to-scenes', async (req: Request, res: Response) => {
+// 3. Complete Pipeline Endpoint (Story Summary → Scenes) - With Database Persistence
+app.post('/api/story-to-scenes', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { storySummary, duration = '10' } = req.body;
+    const { storySummary, duration = '10', title } = req.body;
+    const userId = (req as any).userId;
 
     if (!storySummary) {
       return res.status(400).json({
         error: 'storySummary is required',
-        example: { storySummary: 'A brief story summary (200 words)...', duration: '10' },
+        example: { storySummary: 'A brief story summary (200 words)...', duration: '10', title: 'My Story' },
       });
     }
 
@@ -162,20 +165,90 @@ app.post('/api/story-to-scenes', async (req: Request, res: Response) => {
       });
     }
 
-    const workflow = mastra.getWorkflow('storyToScenesWorkflow');
-    if (!workflow) {
-      return res.status(500).json({ error: 'Story to scenes workflow not found' });
+    // Create database service
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    // Create initial story record
+    const story = await dbService.createStory({
+      summary: storySummary,
+      title,
+      duration: parseInt(duration),
+    });
+
+    // Create workflow run record
+    const workflowRun = await dbService.createWorkflowRun({
+      workflow_id: 'story-to-scenes-workflow',
+      workflow_name: 'Story to Scenes',
+      status: 'running',
+      input: { storySummary, duration },
+    });
+
+    try {
+      const workflow = mastra.getWorkflow('storyToScenesWorkflow');
+      if (!workflow) {
+        await dbService.updateWorkflowRun(workflowRun.id, {
+          status: 'failed',
+          error: 'Workflow not found',
+          completed_at: new Date().toISOString(),
+        });
+        return res.status(500).json({ error: 'Story to scenes workflow not found' });
+      }
+
+      const run = await workflow.createRunAsync();
+      const workflowResult = await run.start({
+        inputData: { storySummary, duration },
+      });
+
+      // Extract the actual result data
+      const result = workflowResult.status === 'success' ? workflowResult.result : null;
+
+      if (!result) {
+        throw new Error('Workflow did not return a successful result');
+      }
+
+      // Update story with workflow results
+      await dbService.updateStory(story.id, {
+        full_story: result.fullStory,
+        characters: result.characters || [],
+      });
+
+      // Create scenes in database
+      if (result.scenesWithPrompts && result.scenesWithPrompts.length > 0) {
+        const scenesData = result.scenesWithPrompts.map((scene: any, index: number) => ({
+          scene_number: index + 1,
+          description: scene.description || '',
+          image_prompt: scene.imagePrompt || '',
+          location: scene.location || '',
+          characters: scene.characters || [],
+        }));
+        await dbService.createScenes(story.id, scenesData);
+      }
+
+      // Update workflow run as completed
+      await dbService.updateWorkflowRun(workflowRun.id, {
+        status: 'completed',
+        output: result,
+        completed_at: new Date().toISOString(),
+      });
+
+      res.json({
+        success: true,
+        data: {
+          ...result,
+          storyId: story.id,
+          workflowRunId: workflowRun.id,
+        },
+      });
+    } catch (workflowError: any) {
+      // Update workflow run as failed
+      await dbService.updateWorkflowRun(workflowRun.id, {
+        status: 'failed',
+        error: workflowError.message,
+        completed_at: new Date().toISOString(),
+      });
+      throw workflowError;
     }
-
-    const run = await workflow.createRunAsync();
-    const result = await run.start({
-      inputData: { storySummary, duration },
-    });
-
-    res.json({
-      success: true,
-      data: result,
-    });
   } catch (error: any) {
     console.error('Error in story-to-scenes pipeline:', error);
     res.status(500).json({
@@ -232,10 +305,11 @@ app.post('/api/story-to-scenes/stream', async (req: Request, res: Response) => {
   }
 });
 
-// 5. Create Series Endpoint
-app.post('/api/create-series', async (req: Request, res: Response) => {
+// 5. Create Series Endpoint - With Database Persistence
+app.post('/api/create-series', requireAuth, async (req: Request, res: Response) => {
   try {
     const { storySummary, numberOfEpisodes } = req.body;
+    const userId = (req as any).userId;
 
     if (!storySummary) {
       return res.status(400).json({
@@ -250,20 +324,78 @@ app.post('/api/create-series', async (req: Request, res: Response) => {
       });
     }
 
-    const workflow = mastra.getWorkflow('createSeriesWorkflow');
-    if (!workflow) {
-      return res.status(500).json({ error: 'Create series workflow not found' });
+    // Create database service
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    // Create workflow run record
+    const workflowRun = await dbService.createWorkflowRun({
+      workflow_id: 'create-series-workflow',
+      workflow_name: 'Create Series',
+      status: 'running',
+      input: { storySummary, numberOfEpisodes },
+    });
+
+    try {
+      const workflow = mastra.getWorkflow('createSeriesWorkflow');
+      if (!workflow) {
+        await dbService.updateWorkflowRun(workflowRun.id, {
+          status: 'failed',
+          error: 'Workflow not found',
+          completed_at: new Date().toISOString(),
+        });
+        return res.status(500).json({ error: 'Create series workflow not found' });
+      }
+
+      const run = await workflow.createRunAsync();
+      const workflowResult = await run.start({
+        inputData: { storySummary, numberOfEpisodes },
+      });
+
+      // Extract the actual result data
+      const result = workflowResult.status === 'success' ? workflowResult.result : null;
+
+      if (!result) {
+        throw new Error('Workflow did not return a successful result');
+      }
+
+      // The result itself is the series context
+      const seriesContext = result;
+
+      // Create series record in database
+      const series = await dbService.createSeries({
+        title: seriesContext.seriesTitle || 'Untitled Series',
+        summary: storySummary,
+        number_of_episodes: numberOfEpisodes,
+        characters: seriesContext.masterCharacters || [],
+        episode_outlines: seriesContext.episodeOutlines || [],
+        plot_threads: seriesContext.plotThreads || [],
+      });
+
+      // Update workflow run as completed
+      await dbService.updateWorkflowRun(workflowRun.id, {
+        status: 'completed',
+        output: result,
+        completed_at: new Date().toISOString(),
+      });
+
+      res.json({
+        success: true,
+        data: {
+          seriesContext: result,
+          seriesId: series.id,
+          workflowRunId: workflowRun.id,
+        },
+      });
+    } catch (workflowError: any) {
+      // Update workflow run as failed
+      await dbService.updateWorkflowRun(workflowRun.id, {
+        status: 'failed',
+        error: workflowError.message,
+        completed_at: new Date().toISOString(),
+      });
+      throw workflowError;
     }
-
-    const run = await workflow.createRunAsync();
-    const result = await run.start({
-      inputData: { storySummary, numberOfEpisodes },
-    });
-
-    res.json({
-      success: true,
-      data: result,
-    });
   } catch (error: any) {
     console.error('Error creating series:', error);
     res.status(500).json({
@@ -273,15 +405,17 @@ app.post('/api/create-series', async (req: Request, res: Response) => {
   }
 });
 
-// 6. Write Episode Endpoint
-app.post('/api/write-episode', async (req: Request, res: Response) => {
+// 6. Write Episode Endpoint - With Database Persistence
+app.post('/api/write-episode', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { seriesContext, episodeNumber, duration = '10', previousEpisodes } = req.body;
+    const { seriesId, seriesContext, episodeNumber, duration = '10', previousEpisodes } = req.body;
+    const userId = (req as any).userId;
 
     if (!seriesContext) {
       return res.status(400).json({
         error: 'seriesContext is required',
         example: {
+          seriesId: 'uuid',
           seriesContext: { /* series context object */ },
           episodeNumber: 1,
           duration: '10',
@@ -303,29 +437,253 @@ app.post('/api/write-episode', async (req: Request, res: Response) => {
       });
     }
 
-    const workflow = mastra.getWorkflow('writeEpisodeWorkflow');
-    if (!workflow) {
-      return res.status(500).json({ error: 'Write episode workflow not found' });
+    // Create database service
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    // Create workflow run record
+    const workflowRun = await dbService.createWorkflowRun({
+      workflow_id: 'write-episode-workflow',
+      workflow_name: 'Write Episode',
+      status: 'running',
+      input: { seriesContext, episodeNumber, duration },
+    });
+
+    try {
+      const workflow = mastra.getWorkflow('writeEpisodeWorkflow');
+      if (!workflow) {
+        await dbService.updateWorkflowRun(workflowRun.id, {
+          status: 'failed',
+          error: 'Workflow not found',
+          completed_at: new Date().toISOString(),
+        });
+        return res.status(500).json({ error: 'Write episode workflow not found' });
+      }
+
+      const run = await workflow.createRunAsync();
+      const workflowResult = await run.start({
+        inputData: {
+          seriesContext,
+          episodeNumber,
+          duration,
+          previousEpisodes: previousEpisodes || [],
+        },
+      });
+
+      // Extract the actual result data
+      const result = workflowResult.status === 'success' ? workflowResult.result : null;
+
+      if (!result) {
+        throw new Error('Workflow did not return a successful result');
+      }
+
+      // Create episode record in database (if seriesId provided)
+      let episodeId = null;
+      if (seriesId) {
+        const episode = await dbService.createEpisode({
+          series_id: seriesId,
+          episode_number: episodeNumber,
+          title: result.episodeTitle || `Episode ${episodeNumber}`,
+          full_episode: result.fullEpisode || '',
+          duration: parseInt(duration),
+        });
+
+        episodeId = episode.id;
+
+        // Create episode scenes in database
+        if (result.scenesWithPrompts && result.scenesWithPrompts.length > 0) {
+          const episodeScenesData = result.scenesWithPrompts.map((scene: any, index: number) => {
+            // Extract multi-angle prompts from imagePrompts array
+            const imagePrompts = scene.imagePrompts || [];
+            return {
+              scene_number: scene.sceneNumber || index + 1,
+              description: scene.description || '',
+              main_prompt: imagePrompts.find((p: any) => p.angle === 'main')?.prompt || '',
+              close_up_prompt: imagePrompts.find((p: any) => p.angle === 'close-up')?.prompt || '',
+              wide_shot_prompt: imagePrompts.find((p: any) => p.angle === 'wide-shot')?.prompt || '',
+              over_shoulder_prompt: imagePrompts.find((p: any) => p.angle === 'over-shoulder')?.prompt || '',
+              dutch_angle_prompt: imagePrompts.find((p: any) => p.angle === 'dutch-angle')?.prompt || '',
+              birds_eye_prompt: imagePrompts.find((p: any) => p.angle === 'birds-eye')?.prompt || '',
+            };
+          });
+          await dbService.createEpisodeScenes(episode.id, episodeScenesData);
+        }
+      }
+
+      // Update workflow run as completed
+      await dbService.updateWorkflowRun(workflowRun.id, {
+        status: 'completed',
+        output: result,
+        completed_at: new Date().toISOString(),
+      });
+
+      res.json({
+        success: true,
+        data: {
+          ...result,
+          episodeId,
+          workflowRunId: workflowRun.id,
+        },
+      });
+    } catch (workflowError: any) {
+      // Update workflow run as failed
+      await dbService.updateWorkflowRun(workflowRun.id, {
+        status: 'failed',
+        error: workflowError.message,
+        completed_at: new Date().toISOString(),
+      });
+      throw workflowError;
     }
-
-    const run = await workflow.createRunAsync();
-    const result = await run.start({
-      inputData: {
-        seriesContext,
-        episodeNumber,
-        duration,
-        previousEpisodes: previousEpisodes || [],
-      },
-    });
-
-    res.json({
-      success: true,
-      data: result,
-    });
   } catch (error: any) {
     console.error('Error writing episode:', error);
     res.status(500).json({
       error: 'Failed to write episode',
+      message: error.message,
+    });
+  }
+});
+
+// ========== Data Retrieval Endpoints ==========
+
+// Get user's stories
+app.get('/api/my-stories', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    const stories = await dbService.getUserStories();
+
+    res.json({
+      success: true,
+      data: stories,
+    });
+  } catch (error: any) {
+    console.error('Error fetching stories:', error);
+    res.status(500).json({
+      error: 'Failed to fetch stories',
+      message: error.message,
+    });
+  }
+});
+
+// Get a specific story with scenes
+app.get('/api/stories/:storyId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { storyId } = req.params;
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    const story = await dbService.getStory(storyId);
+    const scenes = await dbService.getStoryScenes(storyId);
+
+    res.json({
+      success: true,
+      data: {
+        story,
+        scenes,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error fetching story:', error);
+    res.status(500).json({
+      error: 'Failed to fetch story',
+      message: error.message,
+    });
+  }
+});
+
+// Get user's series
+app.get('/api/my-series', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    const series = await dbService.getUserSeries();
+
+    res.json({
+      success: true,
+      data: series,
+    });
+  } catch (error: any) {
+    console.error('Error fetching series:', error);
+    res.status(500).json({
+      error: 'Failed to fetch series',
+      message: error.message,
+    });
+  }
+});
+
+// Get a specific series with episodes
+app.get('/api/series/:seriesId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { seriesId } = req.params;
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    const series = await dbService.getSeries(seriesId);
+    const episodes = await dbService.getSeriesEpisodes(seriesId);
+
+    res.json({
+      success: true,
+      data: {
+        series,
+        episodes,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error fetching series:', error);
+    res.status(500).json({
+      error: 'Failed to fetch series',
+      message: error.message,
+    });
+  }
+});
+
+// Get user's workflow runs
+app.get('/api/my-workflow-runs', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+    const runs = await dbService.getUserWorkflowRuns(limit);
+
+    res.json({
+      success: true,
+      data: runs,
+    });
+  } catch (error: any) {
+    console.error('Error fetching workflow runs:', error);
+    res.status(500).json({
+      error: 'Failed to fetch workflow runs',
+      message: error.message,
+    });
+  }
+});
+
+// Delete a story
+app.delete('/api/stories/:storyId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { storyId } = req.params;
+    const { supabase } = await createSupabaseClient(req);
+    const dbService = new DatabaseService(supabase, userId);
+
+    await dbService.deleteStory(storyId);
+
+    res.json({
+      success: true,
+      message: 'Story deleted successfully',
+    });
+  } catch (error: any) {
+    console.error('Error deleting story:', error);
+    res.status(500).json({
+      error: 'Failed to delete story',
       message: error.message,
     });
   }
@@ -343,15 +701,6 @@ app.use((err: Error, req: Request, res: Response, next: any) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Story Pipeline Server running on http://localhost:${PORT}`);
-  console.log(`📖 API Documentation:`);
-  console.log(`   GET  /health - Health check`);
-  console.log(`   GET  /api/workflows - List available workflows`);
-  console.log(`   POST /api/expand-story - Expand story summary`);
-  console.log(`   POST /api/generate-scenes - Generate scenes from full story`);
-  console.log(`   POST /api/story-to-scenes - Complete pipeline (summary → scenes)`);
-  console.log(`   POST /api/story-to-scenes/stream - Streaming pipeline`);
-  console.log(`   POST /api/create-series - Create series structure with episodes`);
-  console.log(`   POST /api/write-episode - Write individual episode with scenes`);
 });
 
 export default app;
