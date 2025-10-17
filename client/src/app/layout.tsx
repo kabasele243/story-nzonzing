@@ -1,14 +1,8 @@
-import { Button } from "@/components/ui/Button";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedOut,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { ConditionalLayout } from "@/components/layout/ConditionalLayout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,22 +23,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${inter.variable} antialiased`}>
-          <header className="z-100 absolute top-4 right-4 z-10">
-            <SignedOut>
-              <div className="flex gap-2">
-                <SignInButton mode="modal">
-                  <Button variant="secondary">Sign In</Button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <Button>Sign Up</Button>
-                </SignUpButton>
-              </div>
-            </SignedOut>
-          </header>
-          <div className="flex">
-            <Sidebar />
-            <div className="flex-1 lg:pl-22 ">{children}</div>
-          </div>
+          <ConditionalLayout>{children}</ConditionalLayout>
         </body>
       </html>
     </ClerkProvider>
