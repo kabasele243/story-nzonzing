@@ -21,8 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        <Sidebar />
-        {children}
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1 lg:pl-22 ">{children}</div>
+        </div>
       </body>
     </html>
   );

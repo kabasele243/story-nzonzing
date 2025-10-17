@@ -89,17 +89,16 @@ export default function SeriesCreatorPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-foreground">Number of Episodes</label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 mb-2">
                   {[3, 5, 8, 10].map((num) => (
                     <button
                       key={num}
                       type="button"
                       onClick={() => setNumberOfEpisodes(num)}
-                      className={`flex-1 px-3 py-2 rounded-lg border transition-colors ${
-                        numberOfEpisodes === num
-                          ? 'border-primary-accent bg-primary-accent/20 text-primary-accent font-semibold'
-                          : 'border-border bg-hover text-text-secondary hover:border-primary-accent/50'
-                      }`}
+                      className={`flex-1 px-3 py-2 rounded-lg border transition-colors ${numberOfEpisodes === num
+                        ? 'border-primary-accent bg-primary-accent/20 text-primary-accent font-semibold'
+                        : 'border-border bg-hover text-text-secondary hover:border-primary-accent/50'
+                        }`}
                     >
                       {num}
                     </button>
