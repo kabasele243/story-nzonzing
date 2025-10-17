@@ -16,7 +16,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 lg:pl-22">{children}</div>
+      <div className="flex-1">{children}</div>
     </div>
   );
 }

@@ -142,7 +142,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={clsx(
-          'h-screen bg-sidebar-bg border-r border-border flex flex-col fixed left-0 top-0 z-40 transition-all duration-300',
+          'h-screen bg-sidebar-bg border-r border-border flex flex-col  left-0 top-0 z-40 transition-all duration-300',
           // Mobile styles
           'lg:translate-x-0',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full',
