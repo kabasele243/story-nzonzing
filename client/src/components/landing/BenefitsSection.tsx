@@ -52,7 +52,7 @@ export function BenefitsSection() {
             >
               <Button
                 onClick={() => router.push('/dashboard')}
-                className="px-8 py-6"
+                className="flex px-8 py-5 items-center"
               >
                 Start Creating Now
                 <ArrowRight className="w-5 h-5 ml-2" />

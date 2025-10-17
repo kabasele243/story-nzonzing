@@ -28,7 +28,6 @@ export function CTASection() {
           className="text-lg px-10 py-6"
         >
           Get Started for Free
-          <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </motion.div>
     </section>
