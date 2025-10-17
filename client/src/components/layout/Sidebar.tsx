@@ -330,7 +330,7 @@ export function Sidebar() {
         </nav>
 
         {/* User Profile Section */}
-        <div className="p-4 border-t border-border">
+        <div className="p-10 border-t border-border">
           <div className="flex items-center justify-center">
             <UserButton
               appearance={{
@@ -343,7 +343,7 @@ export function Sidebar() {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-border">
+        {/* <div className="p-6 border-t border-border">
           <p
             className={clsx(
               'text-xs text-text-secondary transition-all overflow-hidden',
@@ -352,7 +352,7 @@ export function Sidebar() {
           >
             Powered by AI
           </p>
-        </div>
+        </div> */}
       </aside>
     </>
   );
