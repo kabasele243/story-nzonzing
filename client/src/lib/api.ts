@@ -3,6 +3,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/a
 
 export interface StoryExpanderInput {
   storySummary: string;
+  duration?: '5' | '10' | '30';
 }
 
 export interface StoryExpanderOutput {
@@ -33,6 +34,7 @@ export interface SceneGeneratorOutput {
 
 export interface CompletePipelineInput {
   storySummary: string;
+  duration?: '5' | '10' | '30';
 }
 
 export interface CompletePipelineOutput {

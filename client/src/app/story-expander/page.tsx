@@ -10,6 +10,7 @@ import { Copy, Sparkles } from 'lucide-react';
 
 export default function StoryExpanderPage() {
   const [summary, setSummary] = useState('');
+  const [duration, setDuration] = useState<'5' | '10' | '30'>('10');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fullStory, setFullStory] = useState('');
@@ -26,7 +27,7 @@ export default function StoryExpanderPage() {
     setFullStory('');
 
     try {
-      const result = await expandStory({ storySummary: summary });
+      const result = await expandStory({ storySummary: summary, duration });
       setFullStory(result.fullStory);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -41,23 +42,49 @@ export default function StoryExpanderPage() {
 
   const wordCount = fullStory ? fullStory.split(' ').length : 0;
 
+  const getDurationWords = (dur: string) => {
+    const minutes = parseInt(dur);
+    return minutes * 150;
+  };
+
   return (
     <MainContent
       title="Story Expander"
-      description="Transform a 200-word summary into a rich 2000-word narrative"
+      description="Transform a story summary into a full narrative"
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader
             title="Story Summary"
-            description="Enter a brief story summary (approx. 200 words)"
+            description="Enter a brief story summary"
           />
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Story Duration</label>
+              <div className="flex gap-2">
+                {(['5', '10', '30'] as const).map((dur) => (
+                  <button
+                    key={dur}
+                    type="button"
+                    onClick={() => setDuration(dur)}
+                    className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                      duration === dur
+                        ? 'border-primary-accent bg-primary-accent/20 text-primary-accent'
+                        : 'border-border bg-hover text-text-secondary hover:border-primary-accent/50'
+                    }`}
+                  >
+                    <div className="font-semibold">{dur} min</div>
+                    <div className="text-xs">~{getDurationWords(dur)} words</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Input
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder="Enter your story summary here..."
-              rows={12}
+              rows={10}
               error={error}
             />
 

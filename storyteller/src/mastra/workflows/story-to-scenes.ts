@@ -18,12 +18,13 @@ const sceneWithPromptSchema = z.object({
   imagePrompt: z.string(),
 });
 
-// Step 1: Expand Story (No changes)
+// Step 1: Expand Story with duration support
 const expandStoryStep = createStep({
   id: 'expand-story-combined',
   description: 'Expands a short story summary into a full narrative',
   inputSchema: z.object({
     storySummary: z.string(),
+    duration: z.enum(['5', '10', '30']).default('10').describe('Story duration in minutes (5, 10, or 30)'),
   }),
   outputSchema: z.object({
     fullStory: z.string(),
@@ -36,7 +37,12 @@ const expandStoryStep = createStep({
     if (!agent) {
       throw new Error('LLM agent not available');
     }
-    const systemPrompt = `You are an expert storyteller. Expand a brief story summary into a captivating, long-form narrative of approximately 2000 words. Focus on vivid descriptions, emotional depth, natural dialogue, pacing, and rich world-building.`;
+
+    // Calculate word count based on duration (average reading speed: ~150 words/minute)
+    const durationMinutes = parseInt(inputData.duration || '10');
+    const targetWords = durationMinutes * 150;
+
+    const systemPrompt = `You are an expert storyteller. Expand a brief story summary into a captivating, long-form narrative of approximately ${targetWords} words (${durationMinutes} minutes reading time). Focus on vivid descriptions, emotional depth, natural dialogue, pacing, and rich world-building.`;
     const prompt = `${systemPrompt}\n\nPlease expand the following summary:\n\n${inputData.storySummary}`;
     const result = await agent.generate(prompt);
     if (!result.text) {
@@ -236,6 +242,7 @@ export const storyToScenesWorkflow = createWorkflow({
   id: 'story-to-scenes-workflow',
   inputSchema: z.object({
     storySummary: z.string().describe('Short story summary (approximately 200 words)'),
+    duration: z.enum(['5', '10', '30']).default('10').describe('Story duration in minutes (5, 10, or 30)'),
   }),
   outputSchema: z.object({
     fullStory: z.string(),

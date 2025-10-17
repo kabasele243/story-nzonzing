@@ -28,8 +28,8 @@ app.get('/api/workflows', (req: Request, res: Response) => {
   const workflows = {
     storyExpander: {
       id: 'story-expander-workflow',
-      description: 'Expands a short story summary into a full narrative (~2000 words)',
-      input: { storySummary: 'string' },
+      description: 'Expands a short story summary into a full narrative',
+      input: { storySummary: 'string', duration: 'string (5, 10, or 30 minutes, default: 10)' },
       output: { fullStory: 'string' },
     },
     sceneGenerator: {
@@ -41,7 +41,7 @@ app.get('/api/workflows', (req: Request, res: Response) => {
     storyToScenes: {
       id: 'story-to-scenes-workflow',
       description: 'Complete pipeline: summary → full story → scene prompts',
-      input: { storySummary: 'string' },
+      input: { storySummary: 'string', duration: 'string (5, 10, or 30 minutes, default: 10)' },
       output: { fullStory: 'string', characters: 'array', scenesWithPrompts: 'array' },
     },
   };
@@ -52,12 +52,19 @@ app.get('/api/workflows', (req: Request, res: Response) => {
 // 1. Expand Story Endpoint
 app.post('/api/expand-story', async (req: Request, res: Response) => {
   try {
-    const { storySummary } = req.body;
+    const { storySummary, duration = '10' } = req.body;
 
     if (!storySummary) {
       return res.status(400).json({
         error: 'storySummary is required',
-        example: { storySummary: 'A detective discovers a conspiracy...' },
+        example: { storySummary: 'A detective discovers a conspiracy...', duration: '10' },
+      });
+    }
+
+    // Validate duration
+    if (duration && !['5', '10', '30'].includes(duration)) {
+      return res.status(400).json({
+        error: 'duration must be "5", "10", or "30"',
       });
     }
 
@@ -68,7 +75,7 @@ app.post('/api/expand-story', async (req: Request, res: Response) => {
 
     const run = await workflow.createRunAsync();
     const result = await run.start({
-      inputData: { storySummary },
+      inputData: { storySummary, duration },
     });
 
     res.json({
@@ -122,12 +129,19 @@ app.post('/api/generate-scenes', async (req: Request, res: Response) => {
 // 3. Complete Pipeline Endpoint (Story Summary → Scenes)
 app.post('/api/story-to-scenes', async (req: Request, res: Response) => {
   try {
-    const { storySummary } = req.body;
+    const { storySummary, duration = '10' } = req.body;
 
     if (!storySummary) {
       return res.status(400).json({
         error: 'storySummary is required',
-        example: { storySummary: 'A brief story summary (200 words)...' },
+        example: { storySummary: 'A brief story summary (200 words)...', duration: '10' },
+      });
+    }
+
+    // Validate duration
+    if (duration && !['5', '10', '30'].includes(duration)) {
+      return res.status(400).json({
+        error: 'duration must be "5", "10", or "30"',
       });
     }
 
@@ -138,7 +152,7 @@ app.post('/api/story-to-scenes', async (req: Request, res: Response) => {
 
     const run = await workflow.createRunAsync();
     const result = await run.start({
-      inputData: { storySummary },
+      inputData: { storySummary, duration },
     });
 
     res.json({
@@ -157,11 +171,18 @@ app.post('/api/story-to-scenes', async (req: Request, res: Response) => {
 // 4. Stream endpoint for real-time updates (optional enhancement)
 app.post('/api/story-to-scenes/stream', async (req: Request, res: Response) => {
   try {
-    const { storySummary } = req.body;
+    const { storySummary, duration = '10' } = req.body;
 
     if (!storySummary) {
       return res.status(400).json({
         error: 'storySummary is required',
+      });
+    }
+
+    // Validate duration
+    if (duration && !['5', '10', '30'].includes(duration)) {
+      return res.status(400).json({
+        error: 'duration must be "5", "10", or "30"',
       });
     }
 
@@ -181,7 +202,7 @@ app.post('/api/story-to-scenes/stream', async (req: Request, res: Response) => {
 
     const run = await workflow.createRunAsync();
     const result = await run.start({
-      inputData: { storySummary },
+      inputData: { storySummary, duration },
     });
 
     // Send final result

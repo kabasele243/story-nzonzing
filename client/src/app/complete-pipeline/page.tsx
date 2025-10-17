@@ -16,6 +16,7 @@ const EXAMPLE_SUMMARIES = [
 
 export default function CompletePipelinePage() {
   const [summary, setSummary] = useState('');
+  const [duration, setDuration] = useState<'5' | '10' | '30'>('10');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<CompletePipelineOutput | null>(null);
@@ -46,7 +47,7 @@ export default function CompletePipelinePage() {
         setCurrentStep((prev) => (prev < 4 ? prev + 1 : prev));
       }, 3000);
 
-      const output = await runCompletePipeline({ storySummary: summary });
+      const output = await runCompletePipeline({ storySummary: summary, duration });
       clearInterval(progressInterval);
       setCurrentStep(4);
       setResult(output);
@@ -62,6 +63,11 @@ export default function CompletePipelinePage() {
     navigator.clipboard.writeText(text);
   };
 
+  const getDurationWords = (dur: string) => {
+    const minutes = parseInt(dur);
+    return minutes * 150;
+  };
+
   return (
     <MainContent
       title="Complete Pipeline"
@@ -72,14 +78,35 @@ export default function CompletePipelinePage() {
           <Card>
             <CardHeader
               title="Story Summary"
-              description="Enter a 200-word story summary"
+              description="Enter a story summary"
             />
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">Story Duration</label>
+                <div className="flex gap-2">
+                  {(['5', '10', '30'] as const).map((dur) => (
+                    <button
+                      key={dur}
+                      type="button"
+                      onClick={() => setDuration(dur)}
+                      className={`flex-1 px-3 py-2 rounded-lg border transition-colors ${
+                        duration === dur
+                          ? 'border-primary-accent bg-primary-accent/20 text-primary-accent'
+                          : 'border-border bg-hover text-text-secondary hover:border-primary-accent/50'
+                      }`}
+                    >
+                      <div className="font-semibold text-sm">{dur} min</div>
+                      <div className="text-xs">~{getDurationWords(dur)} words</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <Input
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 placeholder="A lonely astronaut discovers..."
-                rows={8}
+                rows={6}
                 error={error}
               />
 

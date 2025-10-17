@@ -6,9 +6,10 @@ const expandStoryStep = createStep({
   description: 'Expands a short story summary into a rich, long-form narrative',
   inputSchema: z.object({
     storySummary: z.string().describe('The short story summary to expand (approximately 200 words)'),
+    duration: z.enum(['5', '10', '30']).default('10').describe('Story duration in minutes (5, 10, or 30)'),
   }),
   outputSchema: z.object({
-    fullStory: z.string().describe('The expanded full story (approximately 2000 words)'),
+    fullStory: z.string().describe('The expanded full story'),
   }),
   execute: async ({ inputData, mastra }) => {
     if (!inputData?.storySummary) {
@@ -20,6 +21,10 @@ const expandStoryStep = createStep({
       throw new Error('LLM agent not available');
     }
 
+    // Calculate word count based on duration (average reading speed: ~150 words/minute)
+    const durationMinutes = parseInt(inputData.duration || '10');
+    const targetWords = durationMinutes * 150;
+
     const systemPrompt = `You are an expert storyteller. Your task is to take a brief story summary and expand it into a captivating, long-form narrative. Focus on:
 - Vivid descriptions that bring scenes to life
 - Emotional depth and character motivations
@@ -29,9 +34,9 @@ const expandStoryStep = createStep({
 - Show, don't tell - use sensory details
 - Character thoughts and internal conflicts
 
-Create a story of approximately 2000 words that is engaging, immersive, and complete.`;
+Create a story of approximately ${targetWords} words (${durationMinutes} minutes reading time) that is engaging, immersive, and complete.`;
 
-    const prompt = `${systemPrompt}\n\nPlease expand the following summary into a full story of approximately 2000 words:\n\n${inputData.storySummary}`;
+    const prompt = `${systemPrompt}\n\nPlease expand the following summary into a full story of approximately ${targetWords} words:\n\n${inputData.storySummary}`;
 
     const result = await agent.generate(prompt);
 
@@ -49,6 +54,7 @@ export const storyExpanderWorkflow = createWorkflow({
   id: 'story-expander-workflow',
   inputSchema: z.object({
     storySummary: z.string().describe('The short story summary to expand'),
+    duration: z.enum(['5', '10', '30']).default('10').describe('Story duration in minutes (5, 10, or 30)'),
   }),
   outputSchema: z.object({
     fullStory: z.string().describe('The expanded full story'),
