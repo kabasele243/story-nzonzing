@@ -65,7 +65,7 @@ export default function StoryExpanderPage() {
               <span className="text-xs text-text-secondary">
                 {summary.split(' ').filter(Boolean).length} words
               </span>
-              <Button type="submit" loading={loading}>
+              <Button type="submit" loading={loading} className="flex items-center justify-center">
                 <Sparkles className="w-4 h-4 mr-2" />
                 {loading ? 'Expanding...' : 'Expand Story'}
               </Button>

@@ -34,7 +34,7 @@ export function Sidebar() {
   return (
     <aside className="w-64 h-screen bg-sidebar-bg border-r border-border flex flex-col fixed left-0 top-0">
       <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold text-foreground">Story Pipeline</h1>
+        <h1 className="text-xl font-bold text-foreground">Nzonzing</h1>
         <p className="text-xs text-text-secondary mt-1">AI-Powered Storytelling</p>
       </div>
 

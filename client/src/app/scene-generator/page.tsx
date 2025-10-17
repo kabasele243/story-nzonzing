@@ -70,7 +70,7 @@ export default function SceneGeneratorPage() {
                 <span className="text-xs text-text-secondary">
                   {fullStory.split(' ').filter(Boolean).length} words
                 </span>
-                <Button type="submit" loading={loading}>
+                <Button type="submit" loading={loading} className="flex items-center justify-center">
                   <Image className="w-4 h-4 mr-2" />
                   {loading ? 'Analyzing...' : 'Generate Scenes'}
                 </Button>
