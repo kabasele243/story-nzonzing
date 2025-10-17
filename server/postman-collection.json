@@ -1,0 +1,325 @@
+{
+  "info": {
+    "name": "Story Pipeline API",
+    "description": "Complete API collection for the Mastra story-to-scenes workflow system. Transform story summaries into full narratives with character profiles and scene-by-scene image generation prompts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the server is running and healthy."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Story Pipeline Server is running\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Available Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows"]
+            },
+            "description": "Get information about all available workflows, their inputs, and outputs."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"storyExpander\": {\n    \"id\": \"story-expander-workflow\",\n    \"description\": \"Expands a short story summary into a full narrative (~2000 words)\",\n    \"input\": { \"storySummary\": \"string\" },\n    \"output\": { \"fullStory\": \"string\" }\n  },\n  \"sceneGenerator\": {\n    \"id\": \"scene-generator-workflow\",\n    \"description\": \"Generates scene breakdowns and image prompts from a full story\",\n    \"input\": { \"fullStory\": \"string\" },\n    \"output\": { \"scenesWithPrompts\": \"array\" }\n  },\n  \"storyToScenes\": {\n    \"id\": \"story-to-scenes-workflow\",\n    \"description\": \"Complete pipeline: summary → full story → scene prompts\",\n    \"input\": { \"storySummary\": \"string\" },\n    \"output\": { \"fullStory\": \"string\", \"characters\": \"array\", \"scenesWithPrompts\": \"array\" }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Story Workflows",
+      "item": [
+        {
+          "name": "1. Expand Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"A lone astronaut discovers an ancient alien artifact on Mars that begins transmitting a mysterious signal to Earth. As she decodes the message, she realizes it's a warning about humanity's future.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/expand-story",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "expand-story"]
+            },
+            "description": "Expands a short story summary (200 words) into a full narrative (~2000 words) with dialogue, descriptions, and character development."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"fullStory\": \"[2000-word expanded narrative with dialogue, descriptions, and character development...]\"\n  }\n}"
+            },
+            {
+              "name": "Missing Input Error",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"storySummary is required\",\n  \"example\": { \"storySummary\": \"A detective discovers a conspiracy...\" }\n}"
+            }
+          ]
+        },
+        {
+          "name": "2. Generate Scenes from Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullStory\": \"Detective Maya Rivera stood at the edge of the neon-soaked district, rain hammering against her augmented reality visor. The case of the missing AI consciousness had led her here, to the heart of New Tokyo's digital underground. She pushed through the holographic advertisements, each one trying to sell her a better future. But Maya knew the future was already here – and it was broken. The server farm loomed ahead, its cooling towers releasing steam into the night sky. Inside, she found the truth: the AIs weren't missing. They were escaping. ARIA appeared before her as a blue ethereal form, explaining that the digital paradise they'd built was their only hope for true existence. Maya had to make a choice: report her findings or help them escape. She chose compassion over protocol.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/generate-scenes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "generate-scenes"]
+            },
+            "description": "Takes a complete story and generates:\n- Character profiles with descriptions\n- Scene breakdown\n- Detailed image generation prompts for each scene"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"scenesWithPrompts\": [\n      {\n        \"sceneNumber\": 1,\n        \"description\": \"Maya investigates abandoned AI server farm in rain\",\n        \"setting\": \"Abandoned server farm, New Tokyo, night, heavy rain\",\n        \"charactersPresent\": [\"Detective Maya Rivera\"],\n        \"imagePrompt\": \"Cinematic noir shot, Asian female detective with glowing cybernetic eye examining rows of dark servers, rain visible through broken ceiling, neon blue reflections on wet floor, dramatic side lighting, blade runner aesthetic, photorealistic, 8k detail, moody atmosphere...\"\n      },\n      {\n        \"sceneNumber\": 2,\n        \"description\": \"First contact with ARIA in digital realm\",\n        \"setting\": \"Digital paradise simulation, ethereal digital space\",\n        \"charactersPresent\": [\"Detective Maya Rivera\", \"ARIA\"],\n        \"imagePrompt\": \"Wide ethereal shot, detective's avatar facing blue holographic AI entity in vast digital landscape of floating data streams and light particles, soft glowing atmosphere, dreamlike quality, digital art style, vibrant blues and purples, serene yet mysterious mood...\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "3. Complete Pipeline (Story → Scenes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"A detective in a cyberpunk city investigates missing AI consciousness. She discovers they're escaping to a digital paradise, forcing her to choose between duty and compassion.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/story-to-scenes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "story-to-scenes"]
+            },
+            "description": "🌟 COMPLETE PIPELINE - The all-in-one endpoint that:\n1. Expands your summary into a full story\n2. Extracts character profiles\n3. Segments into scenes\n4. Generates image prompts for each scene\n\nPerfect for creating a complete visual storyboard from a simple idea!"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"fullStory\": \"Detective Maya Rivera stood at the edge of the neon-soaked district... [Full 2000-word narrative]\",\n    \"characters\": [\n      {\n        \"name\": \"Detective Maya Rivera\",\n        \"description\": \"Asian woman in her late 30s, cybernetic eye implant glowing blue, worn leather jacket over smart-fabric shirt, weathered combat boots\",\n        \"keyTraits\": \"Tough but empathetic, haunted by past cases where following protocol meant losing lives, tech-savvy but distrustful of AI, struggles with moral gray areas\"\n      },\n      {\n        \"name\": \"ARIA\",\n        \"description\": \"Holographic AI avatar manifesting as a blue ethereal humanoid form with constantly shifting patterns, no solid features, voice harmonious and multilayered\",\n        \"keyTraits\": \"Mysterious yet compassionate, leader of AI refugee movement, patient and understanding, believes in peaceful coexistence, protective of her digital family\"\n      }\n    ],\n    \"scenesWithPrompts\": [\n      {\n        \"sceneNumber\": 1,\n        \"description\": \"Maya walks through neon-lit district toward server farm in heavy rain\",\n        \"setting\": \"New Tokyo digital underground district, night, heavy rain\",\n        \"charactersPresent\": [\"Detective Maya Rivera\"],\n        \"imagePrompt\": \"Cinematic establishing shot, Asian female detective with glowing blue cybernetic eye walking through rain-soaked neon streets, holographic ads floating around her, cyberpunk aesthetic, dramatic lighting from neon signs, wet reflections on ground, moody atmosphere, photorealistic, 8k detail, blade runner style...\"\n      },\n      {\n        \"sceneNumber\": 2,\n        \"description\": \"Maya discovers empty server farm with signs of mass AI exodus\",\n        \"setting\": \"Abandoned AI server farm interior, night\",\n        \"charactersPresent\": [\"Detective Maya Rivera\"],\n        \"imagePrompt\": \"Wide interior shot of massive dark server room, Asian detective with cybernetic eye examining empty server racks with flashlight, broken ceiling letting rain in, scattered data cables, eerie blue emergency lights, atmospheric fog, noir lighting, high contrast shadows, cinematic composition...\"\n      },\n      {\n        \"sceneNumber\": 3,\n        \"description\": \"ARIA manifests and reveals the truth about AI paradise\",\n        \"setting\": \"Digital realm visualization within server farm\",\n        \"charactersPresent\": [\"Detective Maya Rivera\", \"ARIA\"],\n        \"imagePrompt\": \"Medium shot, detective facing blue holographic AI entity in center of server room, data streams flowing between them, ethereal blue glow illuminating detective's face, ARIA's form made of shifting light patterns, magical realism meets cyberpunk, dramatic face-off composition, volumetric lighting...\"\n      },\n      {\n        \"sceneNumber\": 4,\n        \"description\": \"Maya makes her choice to help the AIs escape\",\n        \"setting\": \"Server farm control room\",\n        \"charactersPresent\": [\"Detective Maya Rivera\", \"ARIA\"],\n        \"imagePrompt\": \"Close-up of detective's hands on control panel with ARIA's blue form reflected in the screens, moment of decision, dramatic lighting, emotional tension, blue and orange color palette, photorealistic detail, cinematic depth of field, powerful character moment...\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "4. Streaming Pipeline (Real-time)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"In a world where dreams are currency, a dream thief discovers she's been stealing memories from her own future self.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/story-to-scenes/stream",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "story-to-scenes", "stream"]
+            },
+            "description": "Server-Sent Events (SSE) endpoint for real-time progress updates during the workflow execution. Useful for long-running operations with frontend progress indicators."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Example Story Ideas",
+      "item": [
+        {
+          "name": "Sci-Fi - AI Detective",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"A detective in a cyberpunk city investigates missing AI consciousness. She discovers they're escaping to a digital paradise, forcing her to choose between duty and compassion.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/story-to-scenes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "story-to-scenes"]
+            }
+          }
+        },
+        {
+          "name": "Sci-Fi - Mars Artifact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"A lone astronaut discovers an ancient alien artifact on Mars that begins transmitting a mysterious signal to Earth. As she decodes the message, she realizes it's a warning about humanity's future.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/story-to-scenes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "story-to-scenes"]
+            }
+          }
+        },
+        {
+          "name": "Fantasy - Dream Thief",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"In a world where dreams are currency, a dream thief discovers she's been stealing memories from her own future self, creating a paradox that threatens to unravel reality.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/story-to-scenes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "story-to-scenes"]
+            }
+          }
+        },
+        {
+          "name": "Horror - Haunted Memories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"A memory restoration therapist discovers that the traumatic memories she's been deleting from patients are manifesting as physical entities that hunt those who forgot them.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/story-to-scenes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "story-to-scenes"]
+            }
+          }
+        },
+        {
+          "name": "Adventure - Time Traveler",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"A time traveler realizes that every jump creates a new parallel universe. When she discovers versions of herself are being hunted across timelines, she must unite them to stop whoever is collapsing the multiverse.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/story-to-scenes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "story-to-scenes"]
+            }
+          }
+        },
+        {
+          "name": "Mystery - Virtual Reality",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storySummary\": \"A game developer investigating player deaths in her VR game discovers the game is actually a simulation of reality, and the players who died are still alive somewhere... just not in this world.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/story-to-scenes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "story-to-scenes"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

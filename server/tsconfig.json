@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "../",
+    "module": "ES2020",
+    "target": "ES2020",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2020"],
+    "baseUrl": ".",
+    "paths": {
+      "@storyteller/*": ["../storyteller/src/*"]
+    }
+  },
+  "include": ["src/**/*", "../storyteller/src/mastra/**/*"],
+  "exclude": ["node_modules", "dist", "../storyteller/node_modules"]
+}
