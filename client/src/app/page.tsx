@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { MainContent } from '@/components/layout/MainContent';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Layers, Sparkles, Image, ArrowRight } from 'lucide-react';
+import { Layers, Sparkles, Image, ArrowRight, Film } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -10,7 +10,7 @@ export default function Home() {
       title="Story Pipeline Dashboard"
       description="Welcome to your AI-powered storytelling workspace"
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="hover:border-primary-accent transition-colors cursor-pointer">
           <Link href="/complete-pipeline">
             <div className="flex items-start gap-4">
@@ -62,6 +62,25 @@ export default function Home() {
                 </p>
                 <div className="flex items-center text-primary-accent text-sm font-semibold">
                   Explore <ArrowRight className="w-4 h-4 ml-2" />
+                </div>
+              </div>
+            </div>
+          </Link>
+        </Card>
+
+        <Card className="hover:border-primary-accent transition-colors cursor-pointer">
+          <Link href="/series-creator">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0">
+                <Film className="w-6 h-6 text-primary-accent" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-foreground mb-2">Series Creator</h3>
+                <p className="text-sm text-text-secondary mb-4">
+                  Create a multi-episode series with consistent characters and plot threads
+                </p>
+                <div className="flex items-center text-primary-accent text-sm font-semibold">
+                  Start Series <ArrowRight className="w-4 h-4 ml-2" />
                 </div>
               </div>
             </div>

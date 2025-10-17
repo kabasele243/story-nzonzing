@@ -44,6 +44,23 @@ app.get('/api/workflows', (req: Request, res: Response) => {
       input: { storySummary: 'string', duration: 'string (5, 10, or 30 minutes, default: 10)' },
       output: { fullStory: 'string', characters: 'array', scenesWithPrompts: 'array' },
     },
+    createSeries: {
+      id: 'create-series-workflow',
+      description: 'Creates series metadata, characters, episode outlines, and plot threads',
+      input: { storySummary: 'string', numberOfEpisodes: 'number' },
+      output: { seriesContext: 'object with full series information' },
+    },
+    writeEpisode: {
+      id: 'write-episode-workflow',
+      description: 'Writes a single episode with scenes and multi-angle image prompts',
+      input: {
+        seriesContext: 'object',
+        episodeNumber: 'number',
+        duration: 'string (5, 10, or 30)',
+        previousEpisodes: 'array (optional)',
+      },
+      output: { fullEpisode: 'string', scenesWithPrompts: 'array' },
+    },
   };
 
   res.json(workflows);
@@ -215,6 +232,105 @@ app.post('/api/story-to-scenes/stream', async (req: Request, res: Response) => {
   }
 });
 
+// 5. Create Series Endpoint
+app.post('/api/create-series', async (req: Request, res: Response) => {
+  try {
+    const { storySummary, numberOfEpisodes } = req.body;
+
+    if (!storySummary) {
+      return res.status(400).json({
+        error: 'storySummary is required',
+        example: { storySummary: 'A story summary...', numberOfEpisodes: 5 },
+      });
+    }
+
+    if (!numberOfEpisodes || numberOfEpisodes < 1) {
+      return res.status(400).json({
+        error: 'numberOfEpisodes is required and must be at least 1',
+      });
+    }
+
+    const workflow = mastra.getWorkflow('createSeriesWorkflow');
+    if (!workflow) {
+      return res.status(500).json({ error: 'Create series workflow not found' });
+    }
+
+    const run = await workflow.createRunAsync();
+    const result = await run.start({
+      inputData: { storySummary, numberOfEpisodes },
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    console.error('Error creating series:', error);
+    res.status(500).json({
+      error: 'Failed to create series',
+      message: error.message,
+    });
+  }
+});
+
+// 6. Write Episode Endpoint
+app.post('/api/write-episode', async (req: Request, res: Response) => {
+  try {
+    const { seriesContext, episodeNumber, duration = '10', previousEpisodes } = req.body;
+
+    if (!seriesContext) {
+      return res.status(400).json({
+        error: 'seriesContext is required',
+        example: {
+          seriesContext: { /* series context object */ },
+          episodeNumber: 1,
+          duration: '10',
+          previousEpisodes: [],
+        },
+      });
+    }
+
+    if (!episodeNumber || episodeNumber < 1) {
+      return res.status(400).json({
+        error: 'episodeNumber is required and must be at least 1',
+      });
+    }
+
+    // Validate duration
+    if (duration && !['5', '10', '30'].includes(duration)) {
+      return res.status(400).json({
+        error: 'duration must be "5", "10", or "30"',
+      });
+    }
+
+    const workflow = mastra.getWorkflow('writeEpisodeWorkflow');
+    if (!workflow) {
+      return res.status(500).json({ error: 'Write episode workflow not found' });
+    }
+
+    const run = await workflow.createRunAsync();
+    const result = await run.start({
+      inputData: {
+        seriesContext,
+        episodeNumber,
+        duration,
+        previousEpisodes: previousEpisodes || [],
+      },
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    console.error('Error writing episode:', error);
+    res.status(500).json({
+      error: 'Failed to write episode',
+      message: error.message,
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: any) => {
   console.error('Unhandled error:', err);
@@ -234,6 +350,8 @@ app.listen(PORT, () => {
   console.log(`   POST /api/generate-scenes - Generate scenes from full story`);
   console.log(`   POST /api/story-to-scenes - Complete pipeline (summary → scenes)`);
   console.log(`   POST /api/story-to-scenes/stream - Streaming pipeline`);
+  console.log(`   POST /api/create-series - Create series structure with episodes`);
+  console.log(`   POST /api/write-episode - Write individual episode with scenes`);
 });
 
 export default app;

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { Layers, Sparkles, Image, LayoutDashboard } from 'lucide-react';
+import { Layers, Sparkles, Image, LayoutDashboard, Film, Play } from 'lucide-react';
 
 const navItems = [
   {
@@ -25,6 +25,16 @@ const navItems = [
     label: 'Scene Generator',
     href: '/scene-generator',
     icon: Image,
+  },
+  {
+    label: 'Series Creator',
+    href: '/series-creator',
+    icon: Film,
+  },
+  {
+    label: 'Episode Writer',
+    href: '/episode-writer',
+    icon: Play,
   },
 ];
 
