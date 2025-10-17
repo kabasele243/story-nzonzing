@@ -106,7 +106,7 @@ export default function Home() {
                       View Series
                     </Button>
                     {nextEpisode && (
-                      <Button onClick={() => router.push('/episode-writer')}>
+                      <Button onClick={() => router.push('/episode-writer')} className='flex items-center'>
                         <Play className="w-4 h-4 mr-2" />
                         Continue
                       </Button>
