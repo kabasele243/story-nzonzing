@@ -185,6 +185,29 @@ export class DatabaseService {
     return data as Series[];
   }
 
+  async updateSeries(seriesId: string, data: Partial<Series>) {
+    const { data: series, error } = await this.supabase
+      .from('series')
+      .update(data)
+      .eq('id', seriesId)
+      .eq('clerk_user_id', this.userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return series as Series;
+  }
+
+  async deleteSeries(seriesId: string) {
+    const { error } = await this.supabase
+      .from('series')
+      .delete()
+      .eq('id', seriesId)
+      .eq('clerk_user_id', this.userId);
+
+    if (error) throw error;
+  }
+
   // Episode operations
   async createEpisode(data: {
     series_id: string;
@@ -228,6 +251,29 @@ export class DatabaseService {
 
     if (error) throw error;
     return data as Episode[];
+  }
+
+  async updateEpisode(episodeId: string, data: Partial<Episode>) {
+    const { data: episode, error } = await this.supabase
+      .from('episodes')
+      .update(data)
+      .eq('id', episodeId)
+      .eq('clerk_user_id', this.userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return episode as Episode;
+  }
+
+  async deleteEpisode(episodeId: string) {
+    const { error } = await this.supabase
+      .from('episodes')
+      .delete()
+      .eq('id', episodeId)
+      .eq('clerk_user_id', this.userId);
+
+    if (error) throw error;
   }
 
   // Episode scene operations

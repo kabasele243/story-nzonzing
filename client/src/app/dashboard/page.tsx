@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import { MainContent } from '@/components/layout/MainContent';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -16,7 +17,9 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { SeriesContext, WriteEpisodeOutput } from '@/lib/api';
+import { SeriesContext, WriteEpisodeOutput, fetchUserSeries } from '@/lib/api';
+import { useSeriesStore } from '@/stores/useSeriesStore';
+import { useEpisodeStore } from '@/stores/useEpisodeStore';
 
 interface SeriesInProgress {
   seriesContext: SeriesContext;
@@ -25,26 +28,71 @@ interface SeriesInProgress {
 
 export default function Home() {
   const router = useRouter();
+  const { getToken, isSignedIn } = useAuth();
+  const { currentSeries, currentSeriesId, seriesList, setSeriesList, setLoading, setCurrentSeries } = useSeriesStore();
+  const { getEpisodesForSeries } = useEpisodeStore();
+
   const [seriesInProgress, setSeriesInProgress] = useState<SeriesInProgress | null>(null);
   const [writtenEpisodesCount, setWrittenEpisodesCount] = useState(0);
   const [showAllTools, setShowAllTools] = useState(false);
 
   useEffect(() => {
-    // Load current series from localStorage
-    const storedSeries = localStorage.getItem('currentSeries');
-    const storedEpisodes = localStorage.getItem('writtenEpisodes');
+    // Load series from Zustand store first
+    if (currentSeries && currentSeriesId) {
+      const episodes = getEpisodesForSeries(currentSeriesId);
+      const episodesObj: { [key: number]: WriteEpisodeOutput } = {};
 
-    if (storedSeries) {
-      try {
-        const seriesContext = JSON.parse(storedSeries);
-        const episodes = storedEpisodes ? JSON.parse(storedEpisodes) : {};
-        setSeriesInProgress({ seriesContext, writtenEpisodes: episodes });
-        setWrittenEpisodesCount(Object.keys(episodes).length);
-      } catch (err) {
-        console.error('Failed to load series data:', err);
+      if (episodes) {
+        episodes.forEach((ep) => {
+          episodesObj[ep.episode_number] = {
+            seriesTitle: ep.seriesTitle,
+            episodeNumber: ep.episodeNumber,
+            episodeTitle: ep.episodeTitle,
+            fullEpisode: ep.fullEpisode,
+            scenesWithPrompts: ep.scenesWithPrompts,
+          };
+        });
       }
+
+      setSeriesInProgress({ seriesContext: currentSeries, writtenEpisodes: episodesObj });
+      setWrittenEpisodesCount(Object.keys(episodesObj).length);
     }
-  }, []);
+
+    // Fetch user's series from database
+    const loadUserSeries = async () => {
+      if (isSignedIn) {
+        try {
+          setLoading(true);
+          const token = await getToken();
+          if (token) {
+            const series = await fetchUserSeries(token);
+            setSeriesList(series);
+
+            // If there's a current series in the list, use it
+            if (series.length > 0 && !currentSeries) {
+              const latestSeries = series[0];
+              setCurrentSeries({
+                seriesTitle: latestSeries.seriesTitle,
+                seriesDescription: latestSeries.seriesDescription,
+                tagline: latestSeries.tagline,
+                themes: latestSeries.themes,
+                masterCharacters: latestSeries.masterCharacters,
+                episodeOutlines: latestSeries.episodeOutlines,
+                plotThreads: latestSeries.plotThreads,
+                totalEpisodes: latestSeries.totalEpisodes,
+              }, latestSeries.id);
+            }
+          }
+        } catch (err) {
+          console.error('Failed to load user series:', err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadUserSeries();
+  }, [currentSeries, currentSeriesId, getEpisodesForSeries, isSignedIn, getToken, setSeriesList, setLoading, setCurrentSeries]);
 
   const getNextEpisodeToWrite = (): number | null => {
     if (!seriesInProgress) return null;

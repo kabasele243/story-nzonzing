@@ -1,6 +1,35 @@
 import { createStep, createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 
+// Helper function to sanitize JSON strings by removing/escaping control characters
+function sanitizeJsonString(jsonString: string): string {
+  if (!jsonString || typeof jsonString !== 'string') {
+    throw new Error('Invalid input: jsonString must be a non-empty string');
+  }
+
+  // First, clean markdown code fences and trim
+  let cleaned = jsonString.trim().replace(/^```json\s*|```\s*$/g, '').trim();
+
+  if (!cleaned) {
+    throw new Error('Empty string after cleaning markdown code fences');
+  }
+
+  // Try to extract JSON object or array if there's text before/after it
+  // This regex finds the outermost JSON structure
+  const jsonMatch = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+  if (jsonMatch) {
+    cleaned = jsonMatch[0];
+  }
+
+  // The JSON string likely already has proper newlines, tabs, etc.
+  // We should NOT replace them - they are valid in JSON between properties
+  // We only need to handle control characters WITHIN string values
+  // The best approach is to just return the cleaned JSON as-is
+  // and let JSON.parse handle it properly
+
+  return cleaned;
+}
+
 // Schema definitions
 const masterCharacterSchema = z.object({
   name: z.string(),
@@ -79,7 +108,7 @@ Story Summary: ${inputData.storySummary}`;
       throw new Error('Failed to generate series metadata');
     }
 
-    const cleanedText = result.text.trim().replace(/^```json\s*|```\s*$/g, '');
+    const cleanedText = sanitizeJsonString(result.text);
     const metadata = JSON.parse(cleanedText);
 
     return {
@@ -152,7 +181,7 @@ Return ONLY this JSON structure:
       throw new Error('Failed to create master characters');
     }
 
-    const cleanedText = result.text.trim().replace(/^```json\s*|```\s*$/g, '');
+    const cleanedText = sanitizeJsonString(result.text);
     const characterData = JSON.parse(cleanedText);
 
     return {
@@ -225,7 +254,7 @@ Return ONLY this JSON structure:
       throw new Error('Failed to generate episode outlines');
     }
 
-    const cleanedText = result.text.trim().replace(/^```json\s*|```\s*$/g, '');
+    const cleanedText = sanitizeJsonString(result.text);
     const outlineData = JSON.parse(cleanedText);
 
     return {
@@ -282,7 +311,7 @@ Return ONLY this JSON structure:
       throw new Error('Failed to identify plot threads');
     }
 
-    const cleanedText = result.text.trim().replace(/^```json\s*|```\s*$/g, '');
+    const cleanedText = sanitizeJsonString(result.text);
     const plotData = JSON.parse(cleanedText);
 
     return {

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import { MainContent } from '@/components/layout/MainContent';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Tabs } from '@/components/ui/Tabs';
 import { createSeries, SeriesContext, MasterCharacter, EpisodeOutline, PlotThread } from '@/lib/api';
 import { CheckCircle2, Circle, Film, Users, BookOpen, Sparkles } from 'lucide-react';
+import { useSeriesStore } from '@/stores/useSeriesStore';
 
 const EXAMPLE_SUMMARIES = [
   "In a dystopian future where memories can be extracted and sold, a rogue memory dealer discovers that some memories are being artificially created to control society. As they dig deeper, they uncover a conspiracy that threatens to rewrite humanity's entire history.",
@@ -17,11 +19,15 @@ const EXAMPLE_SUMMARIES = [
 
 export default function SeriesCreatorPage() {
   const router = useRouter();
+  const { getToken, isSignedIn } = useAuth();
+  const { setCurrentSeries, setLoading: setStoreLoading, setError: setStoreError } = useSeriesStore();
+
   const [summary, setSummary] = useState('');
   const [numberOfEpisodes, setNumberOfEpisodes] = useState(5);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [seriesContext, setSeriesContext] = useState<SeriesContext | null>(null);
+  const [seriesId, setSeriesId] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
@@ -33,17 +39,32 @@ export default function SeriesCreatorPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isSignedIn) {
+      setError('Please sign in to create a series');
+      return;
+    }
+
     if (!summary.trim()) {
       setError('Please enter a story summary');
       return;
     }
 
     setLoading(true);
+    setStoreLoading(true);
     setError('');
+    setStoreError(null);
     setSeriesContext(null);
     setCurrentStep(0);
 
     try {
+      // Get authentication token from Clerk
+      const token = await getToken();
+
+      if (!token) {
+        throw new Error('Failed to get authentication token. Please sign in again.');
+      }
+
       // Simulate step progression
       const progressInterval = setInterval(() => {
         setCurrentStep((prev) => (prev < 4 ? prev + 1 : prev));
@@ -52,24 +73,28 @@ export default function SeriesCreatorPage() {
       const output = await createSeries({
         storySummary: summary,
         numberOfEpisodes,
-      });
+      }, token);
 
       clearInterval(progressInterval);
       setCurrentStep(4);
       setSeriesContext(output.seriesContext);
+      setSeriesId(output.seriesId || null);
 
-      // Store series context in localStorage
-      localStorage.setItem('currentSeries', JSON.stringify(output.seriesContext));
+      // Store in Zustand global state instead of localStorage
+      setCurrentSeries(output.seriesContext, output.seriesId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      setStoreError(errorMessage);
       setCurrentStep(0);
     } finally {
       setLoading(false);
+      setStoreLoading(false);
     }
   };
 
   const handleWriteEpisodes = () => {
-    if (seriesContext) {
+    if (seriesContext && seriesId) {
       router.push('/episode-writer');
     }
   };

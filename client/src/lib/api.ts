@@ -267,3 +267,133 @@ export async function writeEpisode(
     episodeId: result.data.episodeId,
   };
 }
+
+// ===== DATABASE FETCH OPERATIONS =====
+
+// Database representation of series (matches Supabase schema)
+export interface SeriesRecord {
+  id: string;
+  user_id?: string;
+  clerk_user_id: string;
+  title: string;
+  summary: string;
+  number_of_episodes: number;
+  characters?: any[];
+  episode_outlines?: any[];
+  plot_threads?: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+// Extended series with both database and context properties
+export interface SeriesWithId extends SeriesRecord, SeriesContext {}
+
+export interface EpisodeWithId extends WriteEpisodeOutput {
+  id: string;
+  series_id: string;
+  clerk_user_id: string;
+  episode_number: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SeriesWithEpisodes {
+  series: SeriesWithId;
+  episodes: EpisodeWithId[];
+}
+
+// Helper function to transform database series to include SeriesContext properties
+function transformSeries(dbSeries: SeriesRecord): SeriesWithId {
+  return {
+    ...dbSeries,
+    seriesTitle: dbSeries.title,
+    seriesDescription: dbSeries.summary,
+    tagline: '', // Not stored in database yet
+    themes: [], // Not stored in database yet
+    masterCharacters: (dbSeries.characters as MasterCharacter[]) || [],
+    episodeOutlines: (dbSeries.episode_outlines as EpisodeOutline[]) || [],
+    plotThreads: (dbSeries.plot_threads as PlotThread[]) || [],
+    totalEpisodes: dbSeries.number_of_episodes,
+  };
+}
+
+// Helper function to transform database episode to include WriteEpisodeOutput properties
+function transformEpisode(dbEpisode: any, seriesTitle: string): EpisodeWithId {
+  // Transform episode scenes to multi-angle prompts
+  const scenesWithPrompts: SceneWithMultiAnglePrompts[] = (dbEpisode.scenes || []).map((scene: any) => ({
+    sceneNumber: scene.scene_number,
+    description: scene.description,
+    setting: '', // Not stored separately in database
+    charactersPresent: [], // Not stored in database
+    imagePrompts: [
+      { type: 'main', prompt: scene.main_prompt || '', description: 'Main shot' },
+      { type: 'close-up', prompt: scene.close_up_prompt || '', description: 'Close-up shot' },
+      { type: 'wide-shot', prompt: scene.wide_shot_prompt || '', description: 'Wide shot' },
+      { type: 'over-shoulder', prompt: scene.over_shoulder_prompt || '', description: 'Over-shoulder shot' },
+      { type: 'dutch-angle', prompt: scene.dutch_angle_prompt || '', description: 'Dutch angle shot' },
+      { type: 'birds-eye', prompt: scene.birds_eye_prompt || '', description: 'Birds eye shot' },
+    ].filter(p => p.prompt) as ImagePrompt[],
+  }));
+
+  return {
+    id: dbEpisode.id,
+    series_id: dbEpisode.series_id,
+    clerk_user_id: dbEpisode.clerk_user_id,
+    episode_number: dbEpisode.episode_number,
+    created_at: dbEpisode.created_at,
+    updated_at: dbEpisode.updated_at,
+    // WriteEpisodeOutput properties
+    seriesTitle: seriesTitle,
+    episodeNumber: dbEpisode.episode_number,
+    episodeTitle: dbEpisode.title,
+    fullEpisode: dbEpisode.full_episode,
+    scenesWithPrompts,
+  };
+}
+
+// Fetch all user's series - WITH AUTHENTICATION
+export async function fetchUserSeries(authToken: string): Promise<SeriesWithId[]> {
+  const response = await fetch(`${API_BASE_URL}/my-series`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch series');
+  }
+
+  const result = await response.json();
+  const seriesRecords = result.data as SeriesRecord[];
+  return seriesRecords.map(transformSeries);
+}
+
+// Fetch a specific series with its episodes - WITH AUTHENTICATION
+export async function fetchSeriesWithEpisodes(
+  seriesId: string,
+  authToken: string
+): Promise<SeriesWithEpisodes> {
+  const response = await fetch(`${API_BASE_URL}/series/${seriesId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch series');
+  }
+
+  const result = await response.json();
+  const data = result.data;
+
+  const transformedSeries = transformSeries(data.series as SeriesRecord);
+
+  return {
+    series: transformedSeries,
+    episodes: data.episodes.map((ep: any) => transformEpisode(ep, transformedSeries.seriesTitle)),
+  };
+}

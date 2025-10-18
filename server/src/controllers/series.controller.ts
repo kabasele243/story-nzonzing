@@ -172,7 +172,18 @@ export class SeriesController {
     const series = await dbService.getSeries(seriesId);
     const episodes = await dbService.getSeriesEpisodes(seriesId);
 
-    return ResponseUtil.success(res, { series, episodes });
+    // Fetch scenes for each episode
+    const episodesWithScenes = await Promise.all(
+      episodes.map(async (episode) => {
+        const scenes = await dbService.getEpisodeScenes(episode.id);
+        return {
+          ...episode,
+          scenes,
+        };
+      })
+    );
+
+    return ResponseUtil.success(res, { series, episodes: episodesWithScenes });
   }
 }
 

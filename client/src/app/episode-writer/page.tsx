@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import { MainContent } from '@/components/layout/MainContent';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,15 +14,27 @@ import {
   PreviousEpisodeSummary,
   SceneWithMultiAnglePrompts,
   ImagePrompt,
+  fetchSeriesWithEpisodes,
+  fetchUserSeries,
 } from '@/lib/api';
-import { CheckCircle2, Circle, Copy, Play, ArrowLeft, Image as ImageIcon, Camera } from 'lucide-react';
+import { CheckCircle2, Circle, Copy, Play, Image as ImageIcon, Camera, Film } from 'lucide-react';
+import { useSeriesStore } from '@/stores/useSeriesStore';
+import { useEpisodeStore } from '@/stores/useEpisodeStore';
 
 export default function EpisodeWriterPage() {
   const router = useRouter();
+  const { getToken, isSignedIn } = useAuth();
+
+  // Zustand stores
+  const { currentSeriesId, seriesList, setSeriesList, setCurrentSeries } = useSeriesStore();
+  const { addEpisode, setEpisodesForSeries } = useEpisodeStore();
+
   const [seriesContext, setSeriesContext] = useState<SeriesContext | null>(null);
+  const [activeSeriesId, setActiveSeriesId] = useState<string | null>(null);
   const [selectedEpisode, setSelectedEpisode] = useState<number>(1);
   const [duration, setDuration] = useState<'5' | '10' | '30'>('10');
   const [loading, setLoading] = useState(false);
+  const [loadingSeries, setLoadingSeries] = useState(false);
   const [error, setError] = useState('');
   const [writtenEpisodes, setWrittenEpisodes] = useState<Map<number, WriteEpisodeOutput>>(new Map());
   const [currentStep, setCurrentStep] = useState(0);
@@ -32,33 +45,111 @@ export default function EpisodeWriterPage() {
     { label: 'Generating Image Prompts', completed: currentStep > 2 },
   ];
 
+  // Fetch all user's series on mount
   useEffect(() => {
-    // Load series context from localStorage
-    const storedSeries = localStorage.getItem('currentSeries');
-    if (storedSeries) {
-      try {
-        const parsed = JSON.parse(storedSeries);
-        setSeriesContext(parsed);
-      } catch (err) {
-        console.error('Failed to parse stored series:', err);
-      }
-    }
+    const loadAllSeries = async () => {
+      if (isSignedIn) {
+        try {
+          setLoadingSeries(true);
+          const token = await getToken();
+          if (token) {
+            const series = await fetchUserSeries(token);
+            setSeriesList(series);
 
-    // Load written episodes from localStorage
-    const storedEpisodes = localStorage.getItem('writtenEpisodes');
-    if (storedEpisodes) {
-      try {
-        const parsed = JSON.parse(storedEpisodes);
-        setWrittenEpisodes(new Map(Object.entries(parsed).map(([k, v]) => [parseInt(k), v as WriteEpisodeOutput])));
-      } catch (err) {
-        console.error('Failed to parse stored episodes:', err);
+            // If currentSeriesId exists, use it; otherwise use the first series
+            if (currentSeriesId) {
+              setActiveSeriesId(currentSeriesId);
+            } else if (series.length > 0) {
+              setActiveSeriesId(series[0].id);
+            }
+          }
+        } catch (err) {
+          console.error('Failed to load user series:', err);
+          setError('Failed to load series. Please try again.');
+        } finally {
+          setLoadingSeries(false);
+        }
       }
-    }
-  }, []);
+    };
+
+    loadAllSeries();
+  }, [isSignedIn, getToken, setSeriesList, currentSeriesId]);
+
+  // Load selected series and its episodes when activeSeriesId changes
+  useEffect(() => {
+    if (!activeSeriesId) return;
+
+    const loadSeriesData = async () => {
+      try {
+        setLoading(true);
+        const token = await getToken();
+        if (token) {
+          const data = await fetchSeriesWithEpisodes(activeSeriesId, token);
+
+          // Set series context
+          setSeriesContext({
+            seriesTitle: data.series.seriesTitle,
+            seriesDescription: data.series.seriesDescription,
+            tagline: data.series.tagline,
+            themes: data.series.themes,
+            masterCharacters: data.series.masterCharacters,
+            episodeOutlines: data.series.episodeOutlines,
+            plotThreads: data.series.plotThreads,
+            totalEpisodes: data.series.totalEpisodes,
+          });
+
+          // Update Zustand store
+          setCurrentSeries({
+            seriesTitle: data.series.seriesTitle,
+            seriesDescription: data.series.seriesDescription,
+            tagline: data.series.tagline,
+            themes: data.series.themes,
+            masterCharacters: data.series.masterCharacters,
+            episodeOutlines: data.series.episodeOutlines,
+            plotThreads: data.series.plotThreads,
+            totalEpisodes: data.series.totalEpisodes,
+          }, activeSeriesId);
+
+          // Store episodes in Zustand
+          setEpisodesForSeries(activeSeriesId, data.episodes);
+
+          // Update local episodes map
+          const episodesMap = new Map<number, WriteEpisodeOutput>();
+          data.episodes.forEach((ep) => {
+            episodesMap.set(ep.episode_number, {
+              seriesTitle: ep.seriesTitle,
+              episodeNumber: ep.episodeNumber,
+              episodeTitle: ep.episodeTitle,
+              fullEpisode: ep.fullEpisode,
+              scenesWithPrompts: ep.scenesWithPrompts,
+            });
+          });
+          setWrittenEpisodes(episodesMap);
+        }
+      } catch (err) {
+        console.error('Failed to load series data:', err);
+        setError('Failed to load series data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSeriesData();
+  }, [activeSeriesId, getToken, setEpisodesForSeries, setCurrentSeries]);
 
   const handleWriteEpisode = async () => {
+    if (!isSignedIn) {
+      setError('Please sign in to write an episode');
+      return;
+    }
+
     if (!seriesContext) {
-      setError('No series context found. Please create a series first.');
+      setError('No series selected. Please select a series first.');
+      return;
+    }
+
+    if (!activeSeriesId) {
+      setError('No series selected. Please select a series first.');
       return;
     }
 
@@ -67,6 +158,13 @@ export default function EpisodeWriterPage() {
     setCurrentStep(0);
 
     try {
+      // Get authentication token from Clerk
+      const token = await getToken();
+
+      if (!token) {
+        throw new Error('Failed to get authentication token. Please sign in again.');
+      }
+
       // Build previous episodes summaries
       const previousEpisodes: PreviousEpisodeSummary[] = [];
       for (let i = 1; i < selectedEpisode; i++) {
@@ -88,23 +186,37 @@ export default function EpisodeWriterPage() {
       }, 5000);
 
       const output = await writeEpisode({
+        seriesId: activeSeriesId,
         seriesContext,
         episodeNumber: selectedEpisode,
         duration,
         previousEpisodes: previousEpisodes.length > 0 ? previousEpisodes : undefined,
-      });
+      }, token);
 
       clearInterval(progressInterval);
       setCurrentStep(3);
 
-      // Store the written episode
+      // Store the written episode locally
       const newWrittenEpisodes = new Map(writtenEpisodes);
       newWrittenEpisodes.set(selectedEpisode, output);
       setWrittenEpisodes(newWrittenEpisodes);
 
-      // Save to localStorage
-      const episodesObj = Object.fromEntries(newWrittenEpisodes);
-      localStorage.setItem('writtenEpisodes', JSON.stringify(episodesObj));
+      // Store in Zustand store (synced with database)
+      if (output.episodeId) {
+        addEpisode(activeSeriesId, {
+          id: output.episodeId,
+          series_id: activeSeriesId,
+          clerk_user_id: '', // Will be populated from server
+          episode_number: selectedEpisode,
+          seriesTitle: output.seriesTitle,
+          episodeNumber: output.episodeNumber,
+          episodeTitle: output.episodeTitle,
+          fullEpisode: output.fullEpisode,
+          scenesWithPrompts: output.scenesWithPrompts,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setCurrentStep(0);
@@ -124,52 +236,82 @@ export default function EpisodeWriterPage() {
 
   const currentEpisodeData = writtenEpisodes.get(selectedEpisode);
 
-  if (!seriesContext) {
-    return (
-      <MainContent title="Episode Writer" description="Write individual episodes for your series">
-        <Card className="text-center py-12">
-          <p className="text-text-secondary mb-4">No series found. Please create a series first.</p>
-          <Button onClick={() => router.push('/series-creator')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Create Series
-          </Button>
-        </Card>
-      </MainContent>
-    );
-  }
-
   return (
     <MainContent
-      title={`${seriesContext.seriesTitle} - Episode Writer`}
+      title="Episode Writer"
       description="Write and manage individual episodes"
     >
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Episode Selector Sidebar */}
         <div className="lg:col-span-1">
+          {/* Series Selector */}
           <Card>
+            <CardHeader title="Select Series" description="Choose which series to write" />
+            <div className="space-y-2">
+              {loadingSeries ? (
+                <div className="text-center py-4">
+                  <div className="w-6 h-6 border-2 border-primary-accent border-t-transparent rounded-full animate-spin mx-auto" />
+                  <p className="text-xs text-text-secondary mt-2">Loading series...</p>
+                </div>
+              ) : seriesList.length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-sm text-text-secondary mb-3">No series found</p>
+                  <Button onClick={() => router.push('/series-creator')} className="text-sm">
+                    <Film className="w-4 h-4 mr-2" />
+                    Create Series
+                  </Button>
+                </div>
+              ) : (
+                <select
+                  value={activeSeriesId || ''}
+                  onChange={(e) => setActiveSeriesId(e.target.value)}
+                  className="w-full px-3 py-2 bg-input border border-border rounded-lg text-foreground focus:border-primary-accent focus:outline-none"
+                >
+                  {seriesList.map((series) => (
+                    <option key={series.id} value={series.id}>
+                      {series.seriesTitle}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </Card>
+
+          <Card className="mt-6">
             <CardHeader title="Episodes" description="Select episode to write" />
             <div className="space-y-2">
-              {seriesContext.episodeOutlines.map((outline) => {
-                const isWritten = writtenEpisodes.has(outline.episodeNumber);
-                return (
-                  <button
-                    key={outline.episodeNumber}
-                    onClick={() => setSelectedEpisode(outline.episodeNumber)}
-                    className={`w-full text-left p-3 rounded-lg border transition-colors ${selectedEpisode === outline.episodeNumber
-                      ? 'border-primary-accent bg-primary-accent/20'
-                      : 'border-border bg-hover hover:border-primary-accent/50'
-                      }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-foreground">
-                        Episode {outline.episodeNumber}
-                      </span>
-                      {isWritten && <CheckCircle2 className="w-4 h-4 text-success" />}
-                    </div>
-                    <p className="text-xs text-text-secondary line-clamp-2">{outline.title}</p>
-                  </button>
-                );
-              })}
+              {!seriesContext || loading ? (
+                <div className="text-center py-4">
+                  <div className="w-6 h-6 border-2 border-primary-accent border-t-transparent rounded-full animate-spin mx-auto" />
+                  <p className="text-xs text-text-secondary mt-2">Loading episodes...</p>
+                </div>
+              ) : seriesContext.episodeOutlines && seriesContext.episodeOutlines.length > 0 ? (
+                seriesContext.episodeOutlines.map((outline) => {
+                  const isWritten = writtenEpisodes.has(outline.episodeNumber);
+                  return (
+                    <button
+                      key={outline.episodeNumber}
+                      onClick={() => setSelectedEpisode(outline.episodeNumber)}
+                      className={`w-full text-left p-3 rounded-lg border transition-colors ${selectedEpisode === outline.episodeNumber
+                        ? 'border-primary-accent bg-primary-accent/20'
+                        : 'border-border bg-hover hover:border-primary-accent/50'
+                        }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-foreground">
+                          Episode {outline.episodeNumber}
+                        </span>
+                        {isWritten && <CheckCircle2 className="w-4 h-4 text-success" />}
+                      </div>
+                      <p className="text-xs text-text-secondary line-clamp-2">{outline.title}</p>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-xs text-text-secondary">No episodes found</p>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -256,9 +398,11 @@ export default function EpisodeWriterPage() {
               <p className="text-text-secondary mb-2">
                 Select an episode and click &quot;Write Episode&quot; to begin
               </p>
-              <p className="text-xs text-text-secondary">
-                {writtenEpisodes.size} of {seriesContext.totalEpisodes} episodes written
-              </p>
+              {seriesContext && (
+                <p className="text-xs text-text-secondary">
+                  {writtenEpisodes.size} of {seriesContext.totalEpisodes} episodes written
+                </p>
+              )}
             </Card>
           )}
         </div>
