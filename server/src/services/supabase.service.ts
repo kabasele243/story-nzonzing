@@ -1,15 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { verifyToken } from '@clerk/backend';
 import { Request } from 'express';
-
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { env } from '../config';
 
 /**
  * Create a Supabase client for server-side usage with Clerk authentication
  * This function extracts the Clerk token from the request and uses it for Supabase auth
  */
-export async function createSupabaseClient(req: Request) {
+export async function createSupabaseClient(req: Request): Promise<{
+  supabase: SupabaseClient;
+  userId: string | null;
+}> {
   const authHeader = req.headers.authorization;
   const token = authHeader?.replace('Bearer ', '');
 
@@ -19,7 +20,7 @@ export async function createSupabaseClient(req: Request) {
   if (token) {
     try {
       const verified = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY,
+        secretKey: env.CLERK_SECRET_KEY,
       });
       clerkUserId = verified.sub;
     } catch (error) {
@@ -28,7 +29,7 @@ export async function createSupabaseClient(req: Request) {
   }
 
   // Create Supabase client with the verified user context
-  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     global: {
       headers: {
         // Pass the Clerk user ID as a custom header for RLS policies
@@ -48,37 +49,11 @@ export async function createSupabaseClient(req: Request) {
  * Create a Supabase admin client that bypasses RLS
  * Use this for administrative operations only
  */
-export function createSupabaseAdminClient() {
-  return createClient(supabaseUrl, supabaseServiceKey, {
+export function createSupabaseAdminClient(): SupabaseClient {
+  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
   });
-}
-
-/**
- * Middleware to verify Clerk authentication and attach user context
- */
-export async function requireAuth(req: Request, res: any, next: any) {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized - No token provided' });
-  }
-
-  try {
-    const verified = await verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
-
-    // Attach user info to request
-    (req as any).userId = verified.sub;
-    (req as any).user = verified;
-    next();
-  } catch (error) {
-    console.error('Error verifying token:', error);
-    return res.status(401).json({ error: 'Unauthorized - Invalid token' });
-  }
 }

@@ -236,11 +236,21 @@ print(result['data'])
 
 ## 🔧 Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the server directory:
 
 ```env
 PORT=3000
-GOOGLE_GENERATIVE_AI_API_KEY=your_api_key_here
+NODE_ENV=development
+
+# AI
+GOOGLE_GENERATIVE_AI_API_KEY=your_api_key
+
+# Supabase
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Clerk
+CLERK_SECRET_KEY=your_clerk_secret_key
 ```
 
 ---
@@ -265,6 +275,24 @@ Common HTTP status codes:
 
 ## 🏗️ Architecture
 
+### Clean Architecture Structure
+
+```
+src/
+├── config/          # Configuration and environment validation
+├── types/           # TypeScript type definitions
+├── middleware/      # Express middleware (auth, error handling, validation)
+├── routes/          # Route definitions and HTTP method mappings
+├── controllers/     # Request/response handling and orchestration
+├── services/        # Business logic and external service integration
+├── validators/      # Request validation logic
+├── utils/           # Shared utilities (logging, responses)
+├── app.ts          # Express app configuration
+└── index.ts        # Application entry point
+```
+
+### Workflow Pipeline
+
 ```
 POST /api/story-to-scenes
     ↓
@@ -278,6 +306,13 @@ POST /api/story-to-scenes
     ↓
 Return: { fullStory, characters, scenesWithPrompts }
 ```
+
+### Layered Design
+
+- **Routes Layer** - HTTP routing and middleware application
+- **Controllers Layer** - Request/response handling
+- **Services Layer** - Business logic and external integrations
+- **Database Layer** - Data persistence operations
 
 ---
 
