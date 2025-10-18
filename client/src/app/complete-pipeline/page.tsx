@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import { MainContent } from '@/components/layout/MainContent';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -15,6 +16,7 @@ const EXAMPLE_SUMMARIES = [
 ];
 
 export default function CompletePipelinePage() {
+  const { getToken, isSignedIn } = useAuth();
   const [summary, setSummary] = useState('');
   const [duration, setDuration] = useState<'5' | '10' | '30'>('10');
   const [loading, setLoading] = useState(false);
@@ -31,6 +33,12 @@ export default function CompletePipelinePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isSignedIn) {
+      setError('Please sign in to create a story');
+      return;
+    }
+
     if (!summary.trim()) {
       setError('Please enter a story summary');
       return;
@@ -42,12 +50,20 @@ export default function CompletePipelinePage() {
     setCurrentStep(0);
 
     try {
+      // Get authentication token from Clerk
+      const token = await getToken();
+
+      if (!token) {
+        throw new Error('Failed to get authentication token. Please sign in again.');
+      }
+
       // Simulate step progression
       const progressInterval = setInterval(() => {
         setCurrentStep((prev) => (prev < 4 ? prev + 1 : prev));
       }, 3000);
 
-      const output = await runCompletePipeline({ storySummary: summary, duration });
+      // Call API with authentication token
+      const output = await runCompletePipeline({ storySummary: summary, duration }, token);
       clearInterval(progressInterval);
       setCurrentStep(4);
       setResult(output);

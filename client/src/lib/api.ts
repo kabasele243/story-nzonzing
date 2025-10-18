@@ -41,6 +41,7 @@ export interface CompletePipelineOutput {
   fullStory: string;
   characters: Character[];
   scenesWithPrompts: SceneWithPrompt[];
+  storyId?: string; // Database ID of the saved story
 }
 
 // Story Expander API
@@ -91,12 +92,16 @@ export async function generateScenes(input: SceneGeneratorInput): Promise<SceneG
   return { scenesWithPrompts };
 }
 
-// Complete Pipeline API
-export async function runCompletePipeline(input: CompletePipelineInput): Promise<CompletePipelineOutput> {
+// Complete Pipeline API - WITH AUTHENTICATION
+export async function runCompletePipeline(
+  input: CompletePipelineInput,
+  authToken: string
+): Promise<CompletePipelineOutput> {
   const response = await fetch(`${API_BASE_URL}/story-to-scenes`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`,
     },
     body: JSON.stringify(input),
   });
@@ -107,17 +112,13 @@ export async function runCompletePipeline(input: CompletePipelineInput): Promise
   }
 
   const result = await response.json();
-  const workflowData = result.data;
 
-  // Extract data from the workflow steps structure
-  const fullStory = workflowData.steps['expand-story-combined']?.output?.fullStory || '';
-  const characters = workflowData.steps['extract-characters-combined']?.output?.characters || [];
-  const scenesWithPrompts = workflowData.steps['generate-image-prompts-combined']?.output?.scenesWithPrompts || [];
-
+  // Return the full data including storyId
   return {
-    fullStory,
-    characters,
-    scenesWithPrompts,
+    fullStory: result.data.fullStory || '',
+    characters: result.data.characters || [],
+    scenesWithPrompts: result.data.scenesWithPrompts || [],
+    storyId: result.data.storyId,
   };
 }
 
@@ -207,12 +208,16 @@ export interface WriteEpisodeOutput {
   scenesWithPrompts: SceneWithMultiAnglePrompts[];
 }
 
-// Create Series API
-export async function createSeries(input: CreateSeriesInput): Promise<CreateSeriesOutput> {
+// Create Series API - WITH AUTHENTICATION
+export async function createSeries(
+  input: CreateSeriesInput,
+  authToken: string
+): Promise<CreateSeriesOutput & { seriesId?: string }> {
   const response = await fetch(`${API_BASE_URL}/create-series`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`,
     },
     body: JSON.stringify(input),
   });
@@ -223,20 +228,24 @@ export async function createSeries(input: CreateSeriesInput): Promise<CreateSeri
   }
 
   const result = await response.json();
-  const workflowData = result.data;
 
-  // Extract series context from the final step
-  const seriesContext = workflowData.steps['identify-plot-threads']?.output || {};
-
-  return { seriesContext };
+  // Return the series context and seriesId from the API response
+  return {
+    seriesContext: result.data.seriesContext,
+    seriesId: result.data.seriesId,
+  };
 }
 
-// Write Episode API
-export async function writeEpisode(input: WriteEpisodeInput): Promise<WriteEpisodeOutput> {
+// Write Episode API - WITH AUTHENTICATION
+export async function writeEpisode(
+  input: WriteEpisodeInput & { seriesId?: string },
+  authToken: string
+): Promise<WriteEpisodeOutput & { episodeId?: string }> {
   const response = await fetch(`${API_BASE_URL}/write-episode`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`,
     },
     body: JSON.stringify(input),
   });
@@ -247,16 +256,14 @@ export async function writeEpisode(input: WriteEpisodeInput): Promise<WriteEpiso
   }
 
   const result = await response.json();
-  const workflowData = result.data;
 
-  // Extract episode data from the final step
-  const episodeData = workflowData.steps['generate-multi-angle-prompts']?.output || {};
-
+  // Return the episode data including episodeId
   return {
-    seriesTitle: episodeData.seriesTitle || '',
-    episodeNumber: episodeData.episodeNumber || 0,
-    episodeTitle: episodeData.episodeTitle || '',
-    fullEpisode: episodeData.fullEpisode || '',
-    scenesWithPrompts: episodeData.scenesWithPrompts || [],
+    seriesTitle: result.data.seriesTitle || '',
+    episodeNumber: result.data.episodeNumber || 0,
+    episodeTitle: result.data.episodeTitle || '',
+    fullEpisode: result.data.fullEpisode || '',
+    scenesWithPrompts: result.data.scenesWithPrompts || [],
+    episodeId: result.data.episodeId,
   };
 }
