@@ -278,9 +278,9 @@ export interface SeriesRecord {
   title: string;
   summary: string;
   number_of_episodes: number;
-  characters?: any[];
-  episode_outlines?: any[];
-  plot_threads?: any[];
+  characters?: unknown[];
+  episode_outlines?: unknown[];
+  plot_threads?: unknown[];
   created_at: string;
   updated_at: string;
 }
@@ -318,8 +318,10 @@ function transformSeries(dbSeries: SeriesRecord): SeriesWithId {
 }
 
 // Helper function to transform database episode to include WriteEpisodeOutput properties
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function transformEpisode(dbEpisode: any, seriesTitle: string): EpisodeWithId {
   // Transform episode scenes to multi-angle prompts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const scenesWithPrompts: SceneWithMultiAnglePrompts[] = (dbEpisode.scenes || []).map((scene: any) => ({
     sceneNumber: scene.scene_number,
     description: scene.description,
@@ -394,6 +396,7 @@ export async function fetchSeriesWithEpisodes(
 
   return {
     series: transformedSeries,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     episodes: data.episodes.map((ep: any) => transformEpisode(ep, transformedSeries.seriesTitle)),
   };
 }

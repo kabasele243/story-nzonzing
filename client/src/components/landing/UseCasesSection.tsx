@@ -18,7 +18,7 @@ export function UseCasesSection() {
             Built for Creators
           </h2>
           <p className="text-xl text-text-secondary max-w-2xl mx-auto">
-            Whether you're making videos, podcasts, films, or writing books
+            Whether you&apos;re making videos, podcasts, films, or writing books
           </p>
         </motion.div>
 

@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { UserButton } from '@clerk/nextjs';
 import {
-  Layers,
   Sparkles,
   Image,
   LayoutDashboard,
@@ -18,8 +17,14 @@ import {
   ChevronRight,
   Book,
   Clapperboard,
-  FileText,
   ChevronDown,
+  PlusCircle,
+  Library,
+  Wrench,
+  Clock,
+  Zap,
+  List,
+  History,
 } from 'lucide-react';
 
 const navItems = [
@@ -29,13 +34,42 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    label: 'Complete Pipeline',
-    href: '/complete-pipeline',
-    icon: Layers,
+    label: 'Create',
+    icon: PlusCircle,
+    subItems: [
+      {
+        label: 'New Story',
+        href: '/complete-pipeline',
+        icon: Zap,
+        description: 'Quick story generation',
+      },
+      {
+        label: 'New Series',
+        href: '/series-creator',
+        icon: Film,
+        description: 'Multi-episode series',
+      }
+    ],
   },
   {
-    label: 'Storytelling Tools',
-    icon: Sparkles,
+    label: 'My Library',
+    icon: Library,
+    subItems: [
+      {
+        label: 'Stories',
+        href: '/creations/stories',
+        icon: Clapperboard,
+      },
+      {
+        label: 'Series',
+        href: '/creations/series',
+        icon: Book,
+      }
+    ],
+  },
+  {
+    label: 'Advanced Tools',
+    icon: Wrench,
     subItems: [
       {
         label: 'Story Expander',
@@ -48,34 +82,27 @@ const navItems = [
         icon: Image,
       },
       {
-        label: 'Series Creator',
-        href: '/series-creator',
-        icon: Film,
-      },
-      {
         label: 'Episode Writer',
         href: '/episode-writer',
         icon: Play,
       },
     ],
   },
-];
-
-const creationsItems = [
   {
-    label: 'Series',
-    href: '/creations/series',
-    icon: Book,
-  },
-  {
-    label: 'Stories',
-    href: '/creations/stories',
-    icon: Clapperboard,
-  },
-  {
-    label: 'Scenes',
-    href: '/creations/scenes',
-    icon: FileText,
+    label: 'Activity',
+    icon: Clock,
+    subItems: [
+      {
+        label: 'Recent Workflows',
+        href: '/activity/workflows',
+        icon: Zap,
+      },
+      {
+        label: 'History',
+        href: '/activity/history',
+        icon: History,
+      },
+    ],
   },
 ];
 
@@ -277,56 +304,6 @@ export function Sidebar() {
               );
             })}
           </ul>
-
-          {/* Creations Section */}
-          <div className="mt-8">
-            <h2
-              className={clsx(
-                'px-4 text-xs font-semibold text-text-secondary uppercase tracking-wider transition-all',
-                isCollapsed && 'lg:text-center'
-              )}
-            >
-              <span className={clsx(isCollapsed && 'lg:hidden')}>Creations</span>
-            </h2>
-            <ul className="space-y-2 mt-2">
-              {creationsItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={clsx(
-                        'flex items-center gap-3 px-4 py-3 rounded-md transition-colors duration-200 relative group',
-                        isActive
-                          ? 'bg-primary-accent text-white'
-                          : 'text-text-secondary hover:bg-hover hover:text-foreground'
-                      )}
-                      title={isCollapsed ? item.label : undefined}
-                    >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span
-                        className={clsx(
-                          'font-semibold whitespace-nowrap overflow-hidden transition-all',
-                          isCollapsed && 'lg:w-0 lg:opacity-0'
-                        )}
-                      >
-                        {item.label}
-                      </span>
-
-                      {/* Tooltip for collapsed state */}
-                      {isCollapsed && (
-                        <div className="hidden lg:block absolute left-full ml-2 px-3 py-2 bg-sidebar-bg border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                          <span className="text-sm text-foreground font-semibold">{item.label}</span>
-                        </div>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
         </nav>
 
         {/* User Profile Section */}

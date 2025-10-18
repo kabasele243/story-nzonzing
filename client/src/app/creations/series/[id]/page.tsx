@@ -25,6 +25,8 @@ import {
 } from '@/lib/api';
 import { useSeriesStore } from '@/stores/useSeriesStore';
 
+type TabId = 'overview' | 'characters' | 'episodes' | 'plot';
+
 export default function SeriesDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -35,7 +37,7 @@ export default function SeriesDetailPage() {
   const [episodes, setEpisodes] = useState<EpisodeWithId[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'characters' | 'episodes' | 'plot'>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   const seriesId = params.id as string;
 
@@ -249,7 +251,7 @@ export default function SeriesDetailPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as TabId)}
               className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? 'border-primary-accent text-primary-accent'

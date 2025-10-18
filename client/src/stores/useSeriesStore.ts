@@ -1,15 +1,5 @@
 import { create } from 'zustand';
-import { SeriesContext } from '@/lib/api';
-
-interface SeriesWithId extends SeriesContext {
-  id: string;
-  user_id: string;
-  clerk_user_id: string;
-  summary: string;
-  number_of_episodes: number;
-  created_at: string;
-  updated_at: string;
-}
+import { SeriesContext, SeriesWithId } from '@/lib/api';
 
 interface SeriesState {
   // State
