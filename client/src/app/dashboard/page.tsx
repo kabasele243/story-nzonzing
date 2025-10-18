@@ -259,7 +259,7 @@ export default function Home() {
         )} */}
 
         {/* All Tools Section (Expandable) */}
-        <Card>
+        {/* <Card>
           <button
             onClick={() => setShowAllTools(!showAllTools)}
             className="w-full flex items-center justify-between p-4 hover:bg-hover transition-colors rounded-lg"
@@ -353,7 +353,7 @@ export default function Home() {
               </Link>
             </div>
           )}
-        </Card>
+        </Card> */}
       </div>
     </MainContent>
   );
