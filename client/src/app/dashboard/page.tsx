@@ -225,6 +225,7 @@ export default function Home() {
           </div>
         </Card>
 
+
         {/* Stats Section */}
         {/* {seriesInProgress && (
           <Card>

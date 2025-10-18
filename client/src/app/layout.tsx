@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ConditionalLayout } from "@/components/layout/ConditionalLayout";
+import { ClientProviders } from "@/components/providers/ClientProviders";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +24,9 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${inter.variable} antialiased`}>
-          <ConditionalLayout>{children}</ConditionalLayout>
+          <ClientProviders>
+            <ConditionalLayout>{children}</ConditionalLayout>
+          </ClientProviders>
         </body>
       </html>
     </ClerkProvider>
