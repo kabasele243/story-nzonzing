@@ -8,7 +8,11 @@ import { storyToScenesWorkflow } from './workflows/story-to-scenes';
 import { createSeriesWorkflow } from './workflows/create-series';
 import { writeEpisodeWorkflow } from './workflows/write-episode';
 import { summaryWorkflow } from './workflows/summary';
+import { storymakerWorkflow } from './workflows/storymaker';
 import { llmAgent } from './agents/llm-agent';
+
+// Export schemas for external use
+export * from './schemas';
 
 export const mastra = new Mastra({
   workflows: {
@@ -18,6 +22,7 @@ export const mastra = new Mastra({
     createSeriesWorkflow,
     writeEpisodeWorkflow,
     summaryWorkflow,
+    storymakerWorkflow,
   },
   agents: {
     llmAgent,
