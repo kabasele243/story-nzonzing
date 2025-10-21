@@ -7,24 +7,11 @@ import clsx from 'clsx';
 import { UserButton } from '@clerk/nextjs';
 import {
   Sparkles,
-  Image,
   LayoutDashboard,
-  Film,
-  Play,
   Menu,
   X,
   ChevronLeft,
   ChevronRight,
-  Book,
-  Clapperboard,
-  ChevronDown,
-  PlusCircle,
-  Library,
-  Wrench,
-  Clock,
-  Zap,
-  List,
-  History,
 } from 'lucide-react';
 
 const navItems = [
@@ -34,75 +21,9 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    label: 'Create',
-    icon: PlusCircle,
-    subItems: [
-      {
-        label: 'Create Story',
-        href: '/create-story',
-        icon: Zap,
-        description: 'Guided story creation',
-      },
-      {
-        label: 'New Series',
-        href: '/series-creator',
-        icon: Film,
-        description: 'Multi-episode series',
-      }
-    ],
-  },
-  {
-    label: 'My Library',
-    icon: Library,
-    subItems: [
-      {
-        label: 'Stories',
-        href: '/creations/stories',
-        icon: Clapperboard,
-      },
-      {
-        label: 'Series',
-        href: '/creations/series',
-        icon: Book,
-      }
-    ],
-  },
-  {
-    label: 'Advanced Tools',
-    icon: Wrench,
-    subItems: [
-      {
-        label: 'Story Expander',
-        href: '/story-expander',
-        icon: Sparkles,
-      },
-      {
-        label: 'Scene Generator',
-        href: '/scene-generator',
-        icon: Image,
-      },
-      {
-        label: 'Episode Writer',
-        href: '/episode-writer',
-        icon: Play,
-      },
-    ],
-  },
-  {
-    label: 'Activity',
-    icon: Clock,
-    subItems: [
-      {
-        label: 'Recent Workflows',
-        href: '/activity/workflows',
-        icon: Zap,
-      },
-      {
-        label: 'History',
-        href: '/activity/history',
-        icon: History,
-      },
-    ],
+    label: 'Create Story',
+    href: '/create-story',
+    icon: Sparkles,
   },
 ];
 

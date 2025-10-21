@@ -12,34 +12,34 @@ import {
 
 export const features = [
   {
-    icon: Film,
-    title: 'Series Creator',
-    description: 'Build multi-episode series with consistent characters and evolving plot threads.',
-  },
-  {
     icon: Sparkles,
-    title: 'Story Expander',
-    description: 'Transform brief summaries into rich, detailed narratives with AI assistance.',
-  },
-  {
-    icon: Image,
-    title: 'Scene Generator',
-    description: 'Break stories into visual scenes with multi-angle image prompts for creators.',
+    title: 'AI Story Generation',
+    description: 'Transform your core idea into a complete narrative with AI-powered creativity.',
   },
   {
     icon: Layers,
-    title: 'Complete Pipeline',
-    description: 'One-click workflow from idea to full story with scenes and prompts.',
-  },
-  {
-    icon: Play,
-    title: 'Episode Writer',
-    description: 'Write episodes with full continuity tracking and character consistency.',
+    title: 'Story Construction Menu',
+    description: 'Choose from tailored options for protagonist, conflict, setting, and theme.',
   },
   {
     icon: BookOpen,
-    title: 'Character Management',
-    description: 'Create and maintain consistent characters across all your stories.',
+    title: 'Multiple Story Lengths',
+    description: 'Generate stories from 5 to 40 minutes, perfect for any reading experience.',
+  },
+  {
+    icon: PenTool,
+    title: 'Instant Templates',
+    description: 'Start quickly with pre-made story templates or create from scratch.',
+  },
+  {
+    icon: Image,
+    title: 'Easy Sharing',
+    description: 'Share your stories with one click or download in multiple formats.',
+  },
+  {
+    icon: Play,
+    title: 'Auto-Save Progress',
+    description: 'Never lose your work with automatic saving of all your story selections.',
   },
 ];
 
@@ -182,22 +182,17 @@ export const useCases = [
 export const howItWorks = [
   {
     step: 1,
-    title: 'Start with Your Idea',
-    description: 'Enter a brief summary or concept for your story, series, or episode.',
+    title: 'Share Your Idea',
+    description: 'Enter your core story concept and choose the desired reading length (5-40 minutes).',
   },
   {
     step: 2,
-    title: 'AI Expands Your Vision',
-    description: 'Our AI analyzes your input and generates rich narratives with detailed scenes and characters.',
+    title: 'Choose Story Elements',
+    description: 'Select from AI-generated options for protagonist, conflict, setting, and theme tailored to your idea.',
   },
   {
     step: 3,
-    title: 'Refine & Customize',
-    description: 'Edit the generated content, adjust characters, and fine-tune the story to match your vision.',
-  },
-  {
-    step: 4,
-    title: 'Export & Create',
-    description: 'Download your story, use the image prompts for visuals, or continue building your series.',
+    title: 'Get Your Story',
+    description: 'Receive a complete, polished narrative ready to read, share, or download instantly.',
   },
 ];

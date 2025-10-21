@@ -1,360 +1,133 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
 import { MainContent } from '@/components/layout/MainContent';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import {
-  Layers,
-  Sparkles,
-  Image,
-  ArrowRight,
-  Film,
-  Play,
-  ChevronDown,
-  ChevronUp
-} from 'lucide-react';
-import { SeriesContext, WriteEpisodeOutput, fetchUserSeries } from '@/lib/api';
-import { useSeriesStore } from '@/stores/useSeriesStore';
-import { useEpisodeStore } from '@/stores/useEpisodeStore';
+import { Sparkles, BookOpen, Clock, TrendingUp } from 'lucide-react';
 
-interface SeriesInProgress {
-  seriesContext: SeriesContext;
-  writtenEpisodes: { [key: number]: WriteEpisodeOutput };
-}
-
-export default function Home() {
+export default function Dashboard() {
   const router = useRouter();
-  const { getToken, isSignedIn } = useAuth();
-  const { currentSeries, currentSeriesId, seriesList, setSeriesList, setLoading, setCurrentSeries } = useSeriesStore();
-  const { getEpisodesForSeries } = useEpisodeStore();
-
-  const [seriesInProgress, setSeriesInProgress] = useState<SeriesInProgress | null>(null);
-  const [writtenEpisodesCount, setWrittenEpisodesCount] = useState(0);
-  const [showAllTools, setShowAllTools] = useState(false);
-
-  useEffect(() => {
-    // Load series from Zustand store first
-    if (currentSeries && currentSeriesId) {
-      const episodes = getEpisodesForSeries(currentSeriesId);
-      const episodesObj: { [key: number]: WriteEpisodeOutput } = {};
-
-      if (episodes) {
-        episodes.forEach((ep) => {
-          episodesObj[ep.episode_number] = {
-            seriesTitle: ep.seriesTitle,
-            episodeNumber: ep.episodeNumber,
-            episodeTitle: ep.episodeTitle,
-            fullEpisode: ep.fullEpisode,
-            scenesWithPrompts: ep.scenesWithPrompts,
-          };
-        });
-      }
-
-      setSeriesInProgress({ seriesContext: currentSeries, writtenEpisodes: episodesObj });
-      setWrittenEpisodesCount(Object.keys(episodesObj).length);
-    }
-
-    // Fetch user's series from database
-    const loadUserSeries = async () => {
-      if (isSignedIn) {
-        try {
-          setLoading(true);
-          const token = await getToken();
-          if (token) {
-            const series = await fetchUserSeries(token);
-            setSeriesList(series);
-
-            // If there's a current series in the list, use it
-            if (series.length > 0 && !currentSeries) {
-              const latestSeries = series[0];
-              setCurrentSeries({
-                seriesTitle: latestSeries.seriesTitle,
-                seriesDescription: latestSeries.seriesDescription,
-                tagline: latestSeries.tagline,
-                themes: latestSeries.themes,
-                masterCharacters: latestSeries.masterCharacters,
-                episodeOutlines: latestSeries.episodeOutlines,
-                plotThreads: latestSeries.plotThreads,
-                totalEpisodes: latestSeries.totalEpisodes,
-              }, latestSeries.id);
-            }
-          }
-        } catch (err) {
-          console.error('Failed to load user series:', err);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadUserSeries();
-  }, [currentSeries, currentSeriesId, getEpisodesForSeries, isSignedIn, getToken, setSeriesList, setLoading, setCurrentSeries]);
-
-  const getNextEpisodeToWrite = (): number | null => {
-    if (!seriesInProgress) return null;
-
-    for (let i = 1; i <= seriesInProgress.seriesContext.totalEpisodes; i++) {
-      if (!seriesInProgress.writtenEpisodes[i]) {
-        return i;
-      }
-    }
-    return null;
-  };
-
-  const nextEpisode = getNextEpisodeToWrite();
 
   return (
     <MainContent
       title="Dashboard"
-      description={seriesInProgress ? `Welcome back! You have work in progress` : 'Welcome to your AI-powered storytelling workspace'}
+      description="Welcome to your AI-powered storytelling workspace"
     >
       <div className="space-y-6">
-        {/* Continue Working Section */}
-        {seriesInProgress && (
-          <Card>
-            <CardHeader
-              title="Continue Working"
-              description="Pick up where you left off"
-            />
-            <div className="space-y-4">
-              <div className="p-4 bg-hover rounded-lg border border-border hover:border-primary-accent transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Film className="w-5 h-5 text-primary-accent" />
-                      <h3 className="font-bold text-foreground text-lg">
-                        {seriesInProgress.seriesContext.seriesTitle}
-                      </h3>
-                    </div>
-                    <p className="text-sm text-text-secondary mb-3">
-                      {seriesInProgress.seriesContext.tagline}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-text-secondary">
-                      <span>
-                        {writtenEpisodesCount} of {seriesInProgress.seriesContext.totalEpisodes} episodes written
-                      </span>
-                      {nextEpisode && (
-                        <span className="text-primary-accent font-semibold">
-                          Next: Episode {nextEpisode}
-                        </span>
-                      )}
-                    </div>
+        {/* Hero Card */}
+        <Card className="bg-gradient-to-br from-primary-accent/10 to-primary-accent/5 border-primary-accent/20">
+          <div className="p-8">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-primary-accent/20 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary-accent" />
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      onClick={() => router.push('/series-creator')}
-                    >
-                      View Series
-                    </Button>
-                    {nextEpisode && (
-                      <Button onClick={() => router.push('/episode-writer')} className='flex items-center'>
-                        <Play className="w-4 h-4 mr-2" />
-                        Continue
-                      </Button>
-                    )}
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground">
+                      Ready to Create?
+                    </h2>
+                    <p className="text-text-secondary">
+                      Start with an idea, explore options, and generate your perfect story
+                    </p>
                   </div>
                 </div>
+                <Button
+                  onClick={() => router.push('/create-story')}
+                  className="bg-primary-accent hover:bg-primary-accent/90 text-white font-medium"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Create New Story
+                </Button>
               </div>
             </div>
-          </Card>
-        )}
-
-        {/* Create Something New Section */}
-        <Card>
-          <CardHeader
-            title="Create Something New"
-            description="Choose a workflow to start creating"
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
-              onClick={() => router.push('/series-creator')}
-              className="p-6 bg-hover hover:bg-primary-accent/10 border-2 border-border hover:border-primary-accent rounded-lg transition-all text-left group"
-            >
-              <div className="w-12 h-12 rounded-lg bg-primary-accent/20 flex items-center justify-center mb-4 group-hover:bg-primary-accent/30 transition-colors">
-                <Film className="w-6 h-6 text-primary-accent" />
-              </div>
-              <h3 className="font-bold text-foreground mb-2">New Series</h3>
-              <p className="text-sm text-text-secondary">
-                Multi-episode storytelling with continuity
-              </p>
-            </button>
-
-            <button
-              onClick={() => router.push('/complete-pipeline')}
-              className="p-6 bg-hover hover:bg-primary-accent/10 border-2 border-border hover:border-primary-accent rounded-lg transition-all text-left group"
-            >
-              <div className="w-12 h-12 rounded-lg bg-primary-accent/20 flex items-center justify-center mb-4 group-hover:bg-primary-accent/30 transition-colors">
-                <Layers className="w-6 h-6 text-primary-accent" />
-              </div>
-              <h3 className="font-bold text-foreground mb-2">New Story</h3>
-              <p className="text-sm text-text-secondary">
-                Full story with scenes and prompts
-              </p>
-            </button>
-
-            <button
-              onClick={() => router.push('/story-expander')}
-              className="p-6 bg-hover hover:bg-primary-accent/10 border-2 border-border hover:border-primary-accent rounded-lg transition-all text-left group"
-            >
-              <div className="w-12 h-12 rounded-lg bg-primary-accent/20 flex items-center justify-center mb-4 group-hover:bg-primary-accent/30 transition-colors">
-                <Sparkles className="w-6 h-6 text-primary-accent" />
-              </div>
-              <h3 className="font-bold text-foreground mb-2">Expand Text</h3>
-              <p className="text-sm text-text-secondary">
-                Turn a summary into a full narrative
-              </p>
-            </button>
-
-            <button
-              onClick={() => router.push('/scene-generator')}
-              className="p-6 bg-hover hover:bg-primary-accent/10 border-2 border-border hover:border-primary-accent rounded-lg transition-all text-left group"
-            >
-              <div className="w-12 h-12 rounded-lg bg-primary-accent/20 flex items-center justify-center mb-4 group-hover:bg-primary-accent/30 transition-colors">
-                <Image className="w-6 h-6 text-primary-accent" />
-              </div>
-              <h3 className="font-bold text-foreground mb-2">Generate Scenes</h3>
-              <p className="text-sm text-text-secondary">
-                Break a story into visual scenes
-              </p>
-            </button>
           </div>
         </Card>
 
+        {/* How It Works */}
+        <Card>
+          <CardHeader
+            title="How It Works"
+            description="Create your story in three simple steps"
+          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 bg-hover rounded-lg border border-border">
+              <div className="w-10 h-10 rounded-full bg-primary-accent/20 flex items-center justify-center mb-4">
+                <span className="text-lg font-bold text-primary-accent">1</span>
+              </div>
+              <h3 className="font-bold text-foreground mb-2">Share Your Idea</h3>
+              <p className="text-sm text-text-secondary">
+                Enter your core story concept and choose the desired length
+              </p>
+            </div>
 
-        {/* Stats Section */}
-        {/* {seriesInProgress && (
-          <Card>
-            <CardHeader title="Your Creative Stats" />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-hover rounded-lg">
-                <Film className="w-6 h-6 text-primary-accent mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">1</div>
-                <div className="text-xs text-text-secondary">Series</div>
+            <div className="p-6 bg-hover rounded-lg border border-border">
+              <div className="w-10 h-10 rounded-full bg-primary-accent/20 flex items-center justify-center mb-4">
+                <span className="text-lg font-bold text-primary-accent">2</span>
               </div>
-              <div className="text-center p-4 bg-hover rounded-lg">
-                <Play className="w-6 h-6 text-primary-accent mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">{writtenEpisodesCount}</div>
-                <div className="text-xs text-text-secondary">Episodes</div>
+              <h3 className="font-bold text-foreground mb-2">Choose Elements</h3>
+              <p className="text-sm text-text-secondary">
+                Select protagonist, conflict, setting, and theme from AI-generated options
+              </p>
+            </div>
+
+            <div className="p-6 bg-hover rounded-lg border border-border">
+              <div className="w-10 h-10 rounded-full bg-primary-accent/20 flex items-center justify-center mb-4">
+                <span className="text-lg font-bold text-primary-accent">3</span>
               </div>
-              <div className="text-center p-4 bg-hover rounded-lg">
-                <Users className="w-6 h-6 text-primary-accent mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">
-                  {seriesInProgress.seriesContext.masterCharacters?.length}
-                </div>
-                <div className="text-xs text-text-secondary">Characters</div>
+              <h3 className="font-bold text-foreground mb-2">Get Your Story</h3>
+              <p className="text-sm text-text-secondary">
+                Receive a complete, polished story ready to read, share, or download
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Features */}
+        <Card>
+          <CardHeader
+            title="What You Can Do"
+            description="Powerful storytelling features at your fingertips"
+          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-start gap-4 p-4 bg-hover rounded-lg">
+              <div className="w-10 h-10 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-5 h-5 text-primary-accent" />
               </div>
-              <div className="text-center p-4 bg-hover rounded-lg">
-                <BookOpen className="w-6 h-6 text-primary-accent mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">
-                  {seriesInProgress.seriesContext.plotThreads.length}
-                </div>
-                <div className="text-xs text-text-secondary">Plot Threads</div>
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">Multiple Lengths</h4>
+                <p className="text-xs text-text-secondary">
+                  Choose from 5, 10, 20, or 40-minute reading experiences
+                </p>
               </div>
             </div>
-          </Card>
-        )} */}
 
-        {/* All Tools Section (Expandable) */}
-        {/* <Card>
-          <button
-            onClick={() => setShowAllTools(!showAllTools)}
-            className="w-full flex items-center justify-between p-4 hover:bg-hover transition-colors rounded-lg"
-          >
-            <div className="text-left">
-              <h3 className="font-bold text-foreground">All Workflows & Tools</h3>
-              <p className="text-sm text-text-secondary">Explore all available storytelling tools</p>
+            <div className="flex items-start gap-4 p-4 bg-hover rounded-lg">
+              <div className="w-10 h-10 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-primary-accent" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">AI-Powered Options</h4>
+                <p className="text-xs text-text-secondary">
+                  Get creative story elements tailored to your core idea
+                </p>
+              </div>
             </div>
-            {showAllTools ? (
-              <ChevronUp className="w-5 h-5 text-text-secondary" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-text-secondary" />
-            )}
-          </button>
 
-          {showAllTools && (
-            <div className="px-4 pb-4 space-y-3 mt-4 border-t border-border pt-4">
-              <Link href="/series-creator">
-                <div className="flex items-center gap-4 p-4 bg-hover hover:bg-primary-accent/10 rounded-lg transition-colors group">
-                  <div className="w-10 h-10 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-accent/30">
-                    <Film className="w-5 h-5 text-primary-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground mb-1">Series Creator</h4>
-                    <p className="text-xs text-text-secondary">
-                      Create multi-episode series with consistent characters and plot threads
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-text-secondary group-hover:text-primary-accent" />
-                </div>
-              </Link>
-
-              <Link href="/episode-writer">
-                <div className="flex items-center gap-4 p-4 bg-hover hover:bg-primary-accent/10 rounded-lg transition-colors group">
-                  <div className="w-10 h-10 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-accent/30">
-                    <Play className="w-5 h-5 text-primary-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground mb-1">Episode Writer</h4>
-                    <p className="text-xs text-text-secondary">
-                      Write individual episodes with full continuity and multi-angle image prompts
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-text-secondary group-hover:text-primary-accent" />
-                </div>
-              </Link>
-
-              <Link href="/complete-pipeline">
-                <div className="flex items-center gap-4 p-4 bg-hover hover:bg-primary-accent/10 rounded-lg transition-colors group">
-                  <div className="w-10 h-10 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-accent/30">
-                    <Layers className="w-5 h-5 text-primary-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground mb-1">Complete Pipeline</h4>
-                    <p className="text-xs text-text-secondary">
-                      Transform a summary into a full story with characters, scenes, and image prompts
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-text-secondary group-hover:text-primary-accent" />
-                </div>
-              </Link>
-
-              <Link href="/story-expander">
-                <div className="flex items-center gap-4 p-4 bg-hover hover:bg-primary-accent/10 rounded-lg transition-colors group">
-                  <div className="w-10 h-10 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-accent/30">
-                    <Sparkles className="w-5 h-5 text-primary-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground mb-1">Story Expander</h4>
-                    <p className="text-xs text-text-secondary">
-                      Expand a brief summary into a rich narrative with customizable duration
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-text-secondary group-hover:text-primary-accent" />
-                </div>
-              </Link>
-
-              <Link href="/scene-generator">
-                <div className="flex items-center gap-4 p-4 bg-hover hover:bg-primary-accent/10 rounded-lg transition-colors group">
-                  <div className="w-10 h-10 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-accent/30">
-                    <Image className="w-5 h-5 text-primary-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground mb-1">Scene Generator</h4>
-                    <p className="text-xs text-text-secondary">
-                      Extract characters and generate scene breakdowns with image prompts from any story
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-text-secondary group-hover:text-primary-accent" />
-                </div>
-              </Link>
+            <div className="flex items-start gap-4 p-4 bg-hover rounded-lg">
+              <div className="w-10 h-10 rounded-lg bg-primary-accent/20 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 text-primary-accent" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">Instant Results</h4>
+                <p className="text-xs text-text-secondary">
+                  Generate complete stories in seconds with professional quality
+                </p>
+              </div>
             </div>
-          )}
-        </Card> */}
+          </div>
+        </Card>
       </div>
     </MainContent>
   );

@@ -18,11 +18,11 @@ export function HowItWorksSection() {
             How It Works
           </h2>
           <p className="text-xl text-text-secondary max-w-2xl mx-auto">
-            From idea to finished story in four simple steps
+            From idea to finished story in three simple steps
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {howItWorks.map((step, index) => (
             <motion.div
               key={index}

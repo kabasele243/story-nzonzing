@@ -50,8 +50,8 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
-            Create compelling stories, series, and visual content with AI.
-            From concept to scene-by-scene breakdowns with image prompts.
+            Share your story idea, explore creative options, and generate complete narratives in minutes.
+            Perfect for writers, creators, and storytellers.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -91,8 +91,8 @@ export function HeroSection() {
               <div className="text-sm text-text-secondary">Stories Created</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary-accent mb-2">6+</div>
-              <div className="text-sm text-text-secondary">AI Workflows</div>
+              <div className="text-3xl font-bold text-primary-accent mb-2">3</div>
+              <div className="text-sm text-text-secondary">Simple Steps</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-primary-accent mb-2">100%</div>
