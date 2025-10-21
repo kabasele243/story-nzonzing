@@ -3,18 +3,22 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Copy, Download, RotateCcw, BookOpen, Clock, FileText } from 'lucide-react';
+import { StoryResultSkeleton } from '@/components/ui/Skeleton';
+import { Copy, Download, RotateCcw, BookOpen, Clock, FileText, Share2 } from 'lucide-react';
 import type { StorymakerOutput } from '@/lib/api/types/story.types';
 
 interface StoryResultProps {
-    story: StorymakerOutput;
+    story: StorymakerOutput | null;
+    isLoading?: boolean;
     onStartOver: () => void;
 }
 
-export function StoryResult({ story, onStartOver }: StoryResultProps) {
+export function StoryResult({ story, isLoading, onStartOver }: StoryResultProps) {
     const [copied, setCopied] = useState(false);
+    const [shared, setShared] = useState(false);
 
     const handleCopy = async () => {
+        if (!story) return;
         try {
             await navigator.clipboard.writeText(story.storyContent);
             setCopied(true);
@@ -25,6 +29,7 @@ export function StoryResult({ story, onStartOver }: StoryResultProps) {
     };
 
     const handleDownload = () => {
+        if (!story) return;
         const element = document.createElement('a');
         const file = new Blob([story.storyContent], { type: 'text/plain' });
         element.href = URL.createObjectURL(file);
@@ -33,6 +38,35 @@ export function StoryResult({ story, onStartOver }: StoryResultProps) {
         element.click();
         document.body.removeChild(element);
     };
+
+    const handleShare = async () => {
+        if (!story) return;
+
+        const shareData = {
+            title: story.metadata.title,
+            text: `Check out this story: "${story.metadata.title}"\n\n${story.storyContent.substring(0, 200)}...`,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+                setShared(true);
+                setTimeout(() => setShared(false), 2000);
+            } else {
+                // Fallback: Copy story summary to clipboard
+                const shareText = `${story.metadata.title}\n\n${story.storyContent}`;
+                await navigator.clipboard.writeText(shareText);
+                setShared(true);
+                setTimeout(() => setShared(false), 2000);
+            }
+        } catch (err) {
+            console.error('Failed to share:', err);
+        }
+    };
+
+    if (isLoading || !story) {
+        return <StoryResultSkeleton />;
+    }
 
     return (
         <div className="space-y-6">
@@ -66,6 +100,14 @@ export function StoryResult({ story, onStartOver }: StoryResultProps) {
                         >
                             <Copy className="h-4 w-4 mr-1" />
                             {copied ? 'Copied!' : 'Copy'}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={handleShare}
+                            className="flex items-center"
+                        >
+                            <Share2 className="h-4 w-4 mr-1" />
+                            {shared ? 'Shared!' : 'Share'}
                         </Button>
                         <Button
                             variant="outline"

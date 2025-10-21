@@ -22,6 +22,33 @@ const lengthOptions = [
     { value: '40', label: '40 minutes' },
 ];
 
+const storyTemplates = [
+    {
+        id: 'detective-ai',
+        title: 'Detective AI',
+        idea: 'A detective discovers that the AI she\'s been hunting is actually her own consciousness from the future, trying to prevent a catastrophic event.',
+        genre: 'Sci-Fi Thriller',
+    },
+    {
+        id: 'last-librarian',
+        title: 'The Last Librarian',
+        idea: 'In a world where books are banned, a librarian discovers that fictional characters are escaping from the last remaining library and entering the real world.',
+        genre: 'Fantasy',
+    },
+    {
+        id: 'time-cafe',
+        title: 'The Time Café',
+        idea: 'A café exists outside of time where people from different eras meet by chance. A barista realizes they can change history through the conversations that happen there.',
+        genre: 'Time Travel',
+    },
+    {
+        id: 'forgotten-melody',
+        title: 'Forgotten Melody',
+        idea: 'A musician discovers that the song stuck in their head is actually a memory from a past life, and learning the full melody could unlock dangerous powers.',
+        genre: 'Mystery/Fantasy',
+    },
+];
+
 export function StoryCreationForm({
     coreIdea,
     desiredLength,
@@ -46,6 +73,22 @@ export function StoryCreationForm({
                     <label htmlFor="coreIdea" className="block text-sm font-medium text-foreground mb-2">
                         What's your story idea?
                     </label>
+
+                    {/* Template Pills */}
+                    <div className="mb-3 flex flex-wrap gap-2">
+                        <span className="text-xs text-text-secondary">Try a template:</span>
+                        {storyTemplates.map((template) => (
+                            <button
+                                key={template.id}
+                                type="button"
+                                onClick={() => setLocalCoreIdea(template.idea)}
+                                className="px-3 py-1 text-xs rounded-full bg-primary-accent/10 hover:bg-primary-accent/20 text-primary-accent border border-primary-accent/20 transition-colors"
+                            >
+                                {template.title}
+                            </button>
+                        ))}
+                    </div>
+
                     <textarea
                         id="coreIdea"
                         value={localCoreIdea}

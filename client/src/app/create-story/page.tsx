@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { useStoryCreationStore } from '@/stores/useStoryCreationStore';
 import { generateSummary } from '@/lib/api/services/summary.service';
 import { generateStory } from '@/lib/api/services/storymaker.service';
-import { StoryCreationForm, StoryMenuModal, StoryResult } from '@/components/story-creation';
+import { StoryCreationForm, StoryMenuModal, StoryResult, ProgressStepper, PreviewModal } from '@/components/story-creation';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function CreateStoryPage() {
     const [currentStep, setCurrentStep] = useState<'form' | 'menu' | 'result'>('form');
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const {
         coreIdea,
@@ -65,6 +66,7 @@ export default function CreateStoryPage() {
             return;
         }
 
+        setIsPreviewOpen(false);
         setLoading(true);
         setError(null);
 
@@ -90,6 +92,11 @@ export default function CreateStoryPage() {
         setCurrentStep('form');
     };
 
+    const handleBackToForm = () => {
+        setMenuModalOpen(false);
+        setCurrentStep('form');
+    };
+
     return (
         <div className="min-h-screen bg-background">
             <ThemeToggle />
@@ -104,6 +111,8 @@ export default function CreateStoryPage() {
                         </p>
                     </div>
 
+                    <ProgressStepper currentStep={currentStep} />
+
                     {currentStep === 'form' && (
                         <StoryCreationForm
                             coreIdea={coreIdea}
@@ -116,9 +125,10 @@ export default function CreateStoryPage() {
                         />
                     )}
 
-                    {currentStep === 'result' && generatedStory && (
+                    {currentStep === 'result' && (
                         <StoryResult
                             story={generatedStory}
+                            isLoading={isLoading}
                             onStartOver={handleStartOver}
                         />
                     )}
@@ -128,12 +138,22 @@ export default function CreateStoryPage() {
             <StoryMenuModal
                 isOpen={isMenuModalOpen}
                 onClose={() => setMenuModalOpen(false)}
+                onBack={handleBackToForm}
                 menuData={menuData}
                 userSelections={userSelections}
                 onSelectionChange={setUserSelections}
-                onGenerateStory={handleGenerateStory}
+                onGenerateStory={() => setIsPreviewOpen(true)}
                 isLoading={isLoading}
                 error={error}
+            />
+
+            <PreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                onConfirm={handleGenerateStory}
+                menuData={menuData}
+                userSelections={userSelections}
+                isLoading={isLoading}
             />
         </div>
     );

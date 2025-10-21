@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Check, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import type { SummaryOutput, UserSelections, StoryCategory, StoryOption } from '@/lib/api/types/story.types';
@@ -9,6 +9,7 @@ import type { SummaryOutput, UserSelections, StoryCategory, StoryOption } from '
 interface StoryMenuModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onBack?: () => void;
     menuData: SummaryOutput | null;
     userSelections: UserSelections;
     onSelectionChange: (selections: UserSelections) => void;
@@ -27,6 +28,7 @@ const categories: Array<{ id: keyof UserSelections; title: string; icon: string 
 export function StoryMenuModal({
     isOpen,
     onClose,
+    onBack,
     menuData,
     userSelections,
     onSelectionChange,
@@ -160,6 +162,16 @@ export function StoryMenuModal({
                 {/* Footer */}
                 <div className="flex items-center justify-between p-6 border-t border-border">
                     <div className="flex space-x-2">
+                        {onBack && (
+                            <Button
+                                variant="outline"
+                                onClick={onBack}
+                                className="flex items-center"
+                            >
+                                <ArrowLeft className="h-4 w-4 mr-1" />
+                                Edit Idea
+                            </Button>
+                        )}
                         <Button
                             variant="outline"
                             onClick={handlePrevious}

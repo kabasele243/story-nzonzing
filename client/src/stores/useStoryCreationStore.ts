@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type {
     SummaryInput,
     SummaryOutput,
@@ -44,38 +45,52 @@ const initialSelections: UserSelections = {
     soul: '',
 };
 
-export const useStoryCreationStore = create<StoryCreationState>((set) => ({
-    // Initial state
-    coreIdea: '',
-    desiredLength: '10',
-    menuData: null,
-    userSelections: initialSelections,
-    generatedStory: null,
-    isMenuModalOpen: false,
-    isLoading: false,
-    error: null,
+export const useStoryCreationStore = create<StoryCreationState>()(
+    persist(
+        (set) => ({
+            // Initial state
+            coreIdea: '',
+            desiredLength: '10',
+            menuData: null,
+            userSelections: initialSelections,
+            generatedStory: null,
+            isMenuModalOpen: false,
+            isLoading: false,
+            error: null,
 
-    // Actions
-    setCoreIdea: (idea) => set({ coreIdea: idea }),
-    setDesiredLength: (length) => set({ desiredLength: length }),
-    setMenuData: (data) => set({ menuData: data }),
-    setUserSelections: (selections) => set({ userSelections: selections }),
-    updateSelection: (category, optionId) =>
-        set((state) => ({
-            userSelections: { ...state.userSelections, [category]: optionId }
-        })),
-    setGeneratedStory: (story) => set({ generatedStory: story }),
-    setMenuModalOpen: (open) => set({ isMenuModalOpen: open }),
-    setLoading: (loading) => set({ isLoading: loading }),
-    setError: (error) => set({ error }),
-    reset: () => set({
-        coreIdea: '',
-        desiredLength: '10',
-        menuData: null,
-        userSelections: initialSelections,
-        generatedStory: null,
-        isMenuModalOpen: false,
-        isLoading: false,
-        error: null,
-    }),
-}));
+            // Actions
+            setCoreIdea: (idea) => set({ coreIdea: idea }),
+            setDesiredLength: (length) => set({ desiredLength: length }),
+            setMenuData: (data) => set({ menuData: data }),
+            setUserSelections: (selections) => set({ userSelections: selections }),
+            updateSelection: (category, optionId) =>
+                set((state) => ({
+                    userSelections: { ...state.userSelections, [category]: optionId }
+                })),
+            setGeneratedStory: (story) => set({ generatedStory: story }),
+            setMenuModalOpen: (open) => set({ isMenuModalOpen: open }),
+            setLoading: (loading) => set({ isLoading: loading }),
+            setError: (error) => set({ error }),
+            reset: () => set({
+                coreIdea: '',
+                desiredLength: '10',
+                menuData: null,
+                userSelections: initialSelections,
+                generatedStory: null,
+                isMenuModalOpen: false,
+                isLoading: false,
+                error: null,
+            }),
+        }),
+        {
+            name: 'story-creation-storage',
+            partialize: (state) => ({
+                coreIdea: state.coreIdea,
+                desiredLength: state.desiredLength,
+                menuData: state.menuData,
+                userSelections: state.userSelections,
+                generatedStory: state.generatedStory,
+            }),
+        }
+    )
+);
