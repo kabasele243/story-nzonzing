@@ -2,11 +2,6 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
-import { storyExpanderWorkflow } from './workflows/story-expander';
-import { sceneGeneratorWorkflow } from './workflows/scene-generator';
-import { storyToScenesWorkflow } from './workflows/story-to-scenes';
-import { createSeriesWorkflow } from './workflows/create-series';
-import { writeEpisodeWorkflow } from './workflows/write-episode';
 import { summaryWorkflow } from './workflows/summary';
 import { storymakerWorkflow } from './workflows/storymaker';
 import { llmAgent } from './agents/llm-agent';
@@ -16,11 +11,6 @@ export * from './schemas';
 
 export const mastra = new Mastra({
   workflows: {
-    storyExpanderWorkflow,
-    sceneGeneratorWorkflow,
-    storyToScenesWorkflow,
-    createSeriesWorkflow,
-    writeEpisodeWorkflow,
     summaryWorkflow,
     storymakerWorkflow,
   },
