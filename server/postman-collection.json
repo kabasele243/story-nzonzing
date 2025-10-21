@@ -231,7 +231,54 @@
           ]
         },
         {
-          "name": "5. Streaming Pipeline (Real-time)",
+          "name": "5. Generate Complete Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userSelections\": {\n    \"protagonist\": \"A\",\n    \"conflict\": \"B\",\n    \"stage\": \"A\",\n    \"soul\": \"C\"\n  },\n  \"storyConstructionMenu\": [\n    {\n      \"categoryID\": \"protagonist\",\n      \"categoryTitle\": \"The Protagonist & Characters\",\n      \"options\": [\n        {\n          \"optionID\": \"A\",\n          \"optionTitle\": \"The Veteran Explorer & The Mysterious Signal\",\n          \"details\": {\n            \"The Protagonist\": \"Commander Elena Vasquez, a seasoned astronaut with 15 years of deep space experience, haunted by a previous mission where she lost her crew.\",\n            \"The Survivor\": \"The signal itself - an ancient AI consciousness that has been waiting for contact, representing the last remnant of a long-dead civilization.\"\n          }\n        }\n      ]\n    },\n    {\n      \"categoryID\": \"conflict\",\n      \"categoryTitle\": \"The Central Conflict\",\n      \"options\": [\n        {\n          \"optionID\": \"B\",\n          \"optionTitle\": \"The Corporate Conspiracy\",\n          \"details\": {\n            \"Description\": \"External conflict: Powerful corporations want to weaponize the signal's technology, forcing the protagonist to race against time to prevent the knowledge from falling into the wrong hands while being hunted by corporate agents.\"\n          }\n        }\n      ]\n    },\n    {\n      \"categoryID\": \"stage\",\n      \"categoryTitle\": \"The Stage (World & Atmosphere)\",\n      \"options\": [\n        {\n          \"optionID\": \"A\",\n          \"optionTitle\": \"The Derelict Station\",\n          \"details\": {\n            \"Location\": \"An abandoned space station orbiting a dying star\",\n            \"Time Period\": \"2157\",\n            \"Cultural Context\": \"Post-corporate collapse era where space exploration is driven by independent contractors and rogue scientists\",\n            \"Physical Environment\": \"Zero gravity chambers, ancient technology, shifting corridors\",\n            \"Atmosphere\": \"Claustrophobic isolation mixed with cosmic wonder\"\n          }\n        }\n      ]\n    },\n    {\n      \"categoryID\": \"soul\",\n      \"categoryTitle\": \"The Soul (Theme & Tone)\",\n      \"options\": [\n        {\n          \"optionID\": \"C\",\n          \"optionTitle\": \"The Nature of Reality\",\n          \"details\": {\n            \"Theme\": \"The fluid nature of truth and reality, and how our understanding of the universe is constantly being rewritten by new discoveries.\",\n            \"Tone\": \"Mind-bending and existential, blending scientific rigor with philosophical wonder\"\n          }\n        }\n      ]\n    }\n  ],\n  \"userInputAnalysis\": {\n    \"requestedLength\": \"40 minutes\",\n    \"coreIdea\": \"A lonely astronaut discovers a mysterious signal from an abandoned space station that could change everything we know about the universe.\",\n    \"analysisNotes\": \"A 40-minute story is a novelette-length work, allowing for complex character development, multiple plot threads, and rich world-building.\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/storymaker",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "storymaker"
+              ]
+            },
+            "description": "📖 COMPLETE STORY GENERATION - Takes user selections from the story construction menu and generates a complete, engaging story that weaves together all the chosen elements:\n- Protagonist & Characters\n- Central Conflict\n- Stage/Setting\n- Soul/Theme\n\nPerfect for creating a full narrative from your creative choices!"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"metadata\": {\n      \"title\": \"The Last Echo in the Glass Sea\",\n      \"generatedOn\": \"2025-01-20T17:30:53-04:00\",\n      \"wordCount\": 3247,\n      \"estimatedReadTime\": \"13 minutes\",\n      \"basedOnBlueprint\": {\n        \"protagonist\": \"A\",\n        \"conflict\": \"B\",\n        \"stage\": \"A\",\n        \"soul\": \"C\"\n      }\n    },\n    \"storyContent\": \"Commander Elena Vasquez had seen the void before, but never like this. The abandoned station hung in space like a broken jewel, its crystalline structure catching the dying light of a red giant star. Her hands trembled slightly as she adjusted the controls of her salvage pod, the weight of fifteen years of space exploration pressing down on her shoulders...\\n\\n[Complete 3,247-word story continues with Elena's discovery of the ancient AI consciousness, her race against corporate agents, and the mind-bending revelations about the nature of reality itself. The story weaves together all the selected elements: Elena as the veteran explorer, the corporate conspiracy conflict, the derelict station setting, and the existential themes about the nature of reality.]\"\n  }\n}"
+            },
+            {
+              "name": "Missing Input Error",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"userSelections, storyConstructionMenu, and userInputAnalysis are required\",\n  \"example\": {\n    \"userSelections\": {\n      \"protagonist\": \"A\",\n      \"conflict\": \"B\",\n      \"stage\": \"A\",\n      \"soul\": \"C\"\n    },\n    \"storyConstructionMenu\": [...],\n    \"userInputAnalysis\": {...}\n  }\n}"
+            },
+            {
+              "name": "Incomplete Selections Error",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"All userSelections (protagonist, conflict, stage, soul) are required\",\n  \"example\": {\n    \"userSelections\": {\n      \"protagonist\": \"A\",\n      \"conflict\": \"B\",\n      \"stage\": \"A\",\n      \"soul\": \"C\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "6. Streaming Pipeline (Real-time)",
           "request": {
             "method": "POST",
             "header": [

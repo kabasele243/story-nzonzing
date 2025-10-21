@@ -13,7 +13,11 @@ router.get('/my-workflow-runs', requireAuth,
   asyncHandler(workflowController.getMyWorkflowRuns));
 
 // Public endpoint - Execute summary workflow
-router.post('/summary', requireAuth,
+router.post('/summary',
   asyncHandler(workflowController.executeSummary));
+
+// Public endpoint - Execute storymaker workflow
+router.post('/storymaker',
+  asyncHandler(workflowController.executeStorymaker));
 
 export default router;

@@ -1,0 +1,73 @@
+{
+    "userSelections": {
+        "protagonist": "A",
+        "conflict": "B",
+        "stage": "A",
+        "soul": "C"
+    },
+    "storyConstructionMenu": [
+        {
+            "categoryID": "protagonist",
+            "categoryTitle": "The Protagonist & Characters",
+            "options": [
+                {
+                    "optionID": "A",
+                    "optionTitle": "The Veteran Explorer & The Mysterious Signal",
+                    "details": {
+                        "The Protagonist": "Commander Elena Vasquez, a seasoned astronaut with 15 years of deep space experience, haunted by a previous mission where she lost her crew.",
+                        "The Survivor": "The signal itself - an ancient AI consciousness that has been waiting for contact, representing the last remnant of a long-dead civilization."
+                    }
+                }
+            ]
+        },
+        {
+            "categoryID": "conflict",
+            "categoryTitle": "The Central Conflict",
+            "options": [
+                {
+                    "optionID": "B",
+                    "optionTitle": "The Corporate Conspiracy",
+                    "details": {
+                        "Description": "External conflict: Powerful corporations want to weaponize the signal's technology, forcing the protagonist to race against time to prevent the knowledge from falling into the wrong hands while being hunted by corporate agents."
+                    }
+                }
+            ]
+        },
+        {
+            "categoryID": "stage",
+            "categoryTitle": "The Stage (World & Atmosphere)",
+            "options": [
+                {
+                    "optionID": "A",
+                    "optionTitle": "The Derelict Station",
+                    "details": {
+                        "Location": "An abandoned space station orbiting a dying star",
+                        "Time Period": "2157",
+                        "Cultural Context": "Post-corporate collapse era where space exploration is driven by independent contractors and rogue scientists",
+                        "Physical Environment": "Zero gravity chambers, ancient technology, shifting corridors",
+                        "Atmosphere": "Claustrophobic isolation mixed with cosmic wonder"
+                    }
+                }
+            ]
+        },
+        {
+            "categoryID": "soul",
+            "categoryTitle": "The Soul (Theme & Tone)",
+            "options": [
+                {
+                    "optionID": "C",
+                    "optionTitle": "The Nature of Reality",
+                    "details": {
+                        "Theme": "The fluid nature of truth and reality, and how our understanding of the universe is constantly being rewritten by new discoveries.",
+                        "Tone": "Mind-bending and existential, blending scientific rigor with philosophical wonder"
+                    }
+                }
+            ]
+        }
+    ],
+    "userInputAnalysis": {
+        "requestedLength": "40 minutes",
+        "coreIdea": "A lonely astronaut discovers a mysterious signal from an abandoned space station that could change everything we know about the universe.",
+        "analysisNotes": "A 40-minute story is a novelette-length work, allowing for complex character development, multiple plot threads, and rich world-building."
+    }
+}

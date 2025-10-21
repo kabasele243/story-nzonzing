@@ -55,6 +55,19 @@ export class WorkflowController {
           storyConstructionMenu: 'array of story categories with options'
         },
       },
+      storymaker: {
+        id: 'storymaker-workflow',
+        description: 'Generates a complete story based on user selections from the story construction menu',
+        input: {
+          userSelections: 'object with protagonist, conflict, stage, soul option IDs',
+          storyConstructionMenu: 'array of story categories with options',
+          userInputAnalysis: 'object with original user input and analysis'
+        },
+        output: {
+          metadata: 'object with title, generation info, and blueprint reference',
+          storyContent: 'string with complete story text'
+        },
+      },
     };
 
     return ResponseUtil.success(res, workflows);
@@ -82,6 +95,30 @@ export class WorkflowController {
       const result = await workflowService.generateSummary({
         desiredLength,
         coreIdea,
+      });
+
+      return ResponseUtil.success(res, result);
+    } catch (error: any) {
+      return ResponseUtil.error(res, error.message, 500);
+    }
+  }
+
+  async executeStorymaker(req: Request, res: Response) {
+    const { userSelections, storyConstructionMenu, userInputAnalysis } = req.body;
+
+    if (!userSelections || !storyConstructionMenu || !userInputAnalysis) {
+      return ResponseUtil.error(res, 'userSelections, storyConstructionMenu, and userInputAnalysis are required', 400);
+    }
+
+    if (!userSelections.protagonist || !userSelections.conflict || !userSelections.stage || !userSelections.soul) {
+      return ResponseUtil.error(res, 'All userSelections (protagonist, conflict, stage, soul) are required', 400);
+    }
+
+    try {
+      const result = await workflowService.generateStory({
+        userSelections,
+        storyConstructionMenu,
+        userInputAnalysis,
       });
 
       return ResponseUtil.success(res, result);

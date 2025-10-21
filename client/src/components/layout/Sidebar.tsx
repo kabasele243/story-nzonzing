@@ -38,10 +38,10 @@ const navItems = [
     icon: PlusCircle,
     subItems: [
       {
-        label: 'New Story',
-        href: '/complete-pipeline',
+        label: 'Create Story',
+        href: '/create-story',
         icon: Zap,
-        description: 'Quick story generation',
+        description: 'Guided story creation',
       },
       {
         label: 'New Series',

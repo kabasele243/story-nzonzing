@@ -109,3 +109,42 @@ export interface SummaryOutput {
     }>;
   }>;
 }
+
+export interface StorymakerInput {
+  userSelections: {
+    protagonist: string;
+    conflict: string;
+    stage: string;
+    soul: string;
+  };
+  storyConstructionMenu: Array<{
+    categoryID: 'protagonist' | 'conflict' | 'stage' | 'soul';
+    categoryTitle: string;
+    options: Array<{
+      optionID: string;
+      optionTitle: string;
+      details: Record<string, string>;
+    }>;
+  }>;
+  userInputAnalysis: {
+    requestedLength: string;
+    coreIdea: string;
+    analysisNotes: string;
+  };
+}
+
+export interface StorymakerOutput {
+  metadata: {
+    title: string;
+    generatedOn: string;
+    wordCount: number;
+    estimatedReadTime: string;
+    basedOnBlueprint: {
+      protagonist: string;
+      conflict: string;
+      stage: string;
+      soul: string;
+    };
+  };
+  storyContent: string;
+}

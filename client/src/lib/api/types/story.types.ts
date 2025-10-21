@@ -42,3 +42,59 @@ export interface CompletePipelineOutput {
   scenesWithPrompts: SceneWithPrompt[];
   storyId?: string; // Database ID of the saved story
 }
+
+// Story Creation Menu Types
+export interface StoryOption {
+  optionID: string;
+  optionTitle: string;
+  details: Record<string, string>;
+}
+
+export interface StoryCategory {
+  categoryID: 'protagonist' | 'conflict' | 'stage' | 'soul';
+  categoryTitle: string;
+  options: StoryOption[];
+}
+
+export interface UserInputAnalysis {
+  requestedLength: string;
+  coreIdea: string;
+  analysisNotes: string;
+}
+
+export interface SummaryInput {
+  desiredLength: string;
+  coreIdea: string;
+}
+
+export interface SummaryOutput {
+  userInputAnalysis: UserInputAnalysis;
+  storyConstructionMenu: StoryCategory[];
+}
+
+// Storymaker Types
+export interface UserSelections {
+  protagonist: string;
+  conflict: string;
+  stage: string;
+  soul: string;
+}
+
+export interface StorymakerInput {
+  userSelections: UserSelections;
+  storyConstructionMenu: StoryCategory[];
+  userInputAnalysis: UserInputAnalysis;
+}
+
+export interface StoryMetadata {
+  title: string;
+  generatedOn: string;
+  wordCount: number;
+  estimatedReadTime: string;
+  basedOnBlueprint: UserSelections;
+}
+
+export interface StorymakerOutput {
+  metadata: StoryMetadata;
+  storyContent: string;
+}
