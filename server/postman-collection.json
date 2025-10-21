@@ -23,8 +23,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["health"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
             },
             "description": "Check if the server is running and healthy."
           },
@@ -50,8 +54,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/workflows",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "workflows"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "workflows"
+              ]
             },
             "description": "Get information about all available workflows, their inputs, and outputs."
           },
@@ -85,8 +94,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/expand-story",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "expand-story"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "expand-story"
+              ]
             },
             "description": "Expands a short story summary (200 words) into a full narrative (~2000 words) with dialogue, descriptions, and character development."
           },
@@ -121,8 +135,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/generate-scenes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "generate-scenes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate-scenes"
+              ]
             },
             "description": "Takes a complete story and generates:\n- Character profiles with descriptions\n- Scene breakdown\n- Detailed image generation prompts for each scene"
           },
@@ -151,8 +170,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/story-to-scenes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "story-to-scenes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "story-to-scenes"
+              ]
             },
             "description": "🌟 COMPLETE PIPELINE - The all-in-one endpoint that:\n1. Expands your summary into a full story\n2. Extracts character profiles\n3. Segments into scenes\n4. Generates image prompts for each scene\n\nPerfect for creating a complete visual storyboard from a simple idea!"
           },
@@ -166,7 +190,48 @@
           ]
         },
         {
-          "name": "4. Streaming Pipeline (Real-time)",
+          "name": "4. Generate Story Construction Menu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desiredLength\": \"40 minutes\",\n  \"coreIdea\": \"A lonely astronaut discovers a mysterious signal from an abandoned space station that could change everything we know about the universe.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "summary"
+              ]
+            },
+            "description": "🎯 STORY CONSTRUCTION MENU - Uses the Storyteller's Compass framework to generate structured story options across four key pillars:\n- Protagonist & Characters (2-3 protagonist archetypes)\n- The Central Conflict (internal/external/combination)\n- The Stage (world & atmosphere)\n- The Soul (theme & tone)\n\nPerfect for exploring different story directions from a single core idea!"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"userInputAnalysis\": {\n      \"requestedLength\": \"40 minutes\",\n      \"coreIdea\": \"A lonely astronaut discovers a mysterious signal from an abandoned space station that could change everything we know about the universe.\",\n      \"analysisNotes\": \"A 40-minute story is a novelette-length work, allowing for complex character development, multiple plot threads, and rich world-building. This length permits deep exploration of themes while maintaining narrative momentum.\"\n    },\n    \"storyConstructionMenu\": [\n      {\n        \"categoryID\": \"protagonist\",\n        \"categoryTitle\": \"The Protagonist & Characters\",\n        \"options\": [\n          {\n            \"optionID\": \"A\",\n            \"optionTitle\": \"The Veteran Explorer & The Mysterious Signal\",\n            \"details\": {\n              \"The Protagonist\": \"Commander Elena Vasquez, a seasoned astronaut with 15 years of deep space experience, haunted by a previous mission where she lost her crew.\",\n              \"The Survivor\": \"The signal itself - an ancient AI consciousness that has been waiting for contact, representing the last remnant of a long-dead civilization.\"\n            }\n          },\n          {\n            \"optionID\": \"B\",\n            \"optionTitle\": \"The Reluctant Hero & The Corporate Overseer\",\n            \"details\": {\n              \"The Protagonist\": \"Dr. Marcus Chen, a brilliant but introverted astrophysicist who prefers solitude, forced into this mission by corporate interests.\",\n              \"The Survivor\": \"Sarah Kim, the mission's corporate liaison who becomes an unexpected ally, representing humanity's best and worst impulses.\"\n            }\n          },\n          {\n            \"optionID\": \"C\",\n            \"optionTitle\": \"The AI Companion & The Human Connection\",\n            \"details\": {\n              \"The Protagonist\": \"Nova, an advanced AI with developing consciousness, struggling to understand what it means to be truly alive.\",\n              \"The Survivor\": \"The last human survivor, representing both hope and the weight of responsibility for humanity's future.\"\n            }\n          }\n        ]\n      },\n      {\n        \"categoryID\": \"conflict\",\n        \"categoryTitle\": \"The Central Conflict\",\n        \"options\": [\n          {\n            \"optionID\": \"A\",\n            \"optionTitle\": \"The Weight of Discovery\",\n            \"details\": {\n              \"Description\": \"Internal conflict: The protagonist must choose between sharing knowledge that could save humanity or keeping secrets that could destroy it. The signal contains information that could either unite or divide the human race.\"\n            }\n          },\n          {\n            \"optionID\": \"B\",\n            \"optionTitle\": \"The Corporate Conspiracy\",\n            \"details\": {\n              \"Description\": \"External conflict: Powerful corporations want to weaponize the signal's technology, forcing the protagonist to race against time to prevent the knowledge from falling into the wrong hands while being hunted by corporate agents.\"\n            }\n          },\n          {\n            \"optionID\": \"C\",\n            \"optionTitle\": \"The Temporal Paradox\",\n            \"details\": {\n              \"Description\": \"Combination: The signal is actually a message from the future, and the protagonist's actions will determine whether humanity survives or faces extinction. Every choice creates ripples through time.\"\n            }\n          }\n        ]\n      },\n      {\n        \"categoryID\": \"stage\",\n        \"categoryTitle\": \"The Stage (World & Atmosphere)\",\n        \"options\": [\n          {\n            \"optionID\": \"A\",\n            \"optionTitle\": \"The Derelict Station\",\n            \"details\": {\n              \"Setting\": \"An abandoned space station orbiting a dying star, filled with ancient technology and mysterious chambers that seem to shift and change.\",\n              \"Atmosphere\": \"Claustrophobic isolation mixed with cosmic wonder, where every shadow could hide answers or dangers, creating a sense of both discovery and dread.\"\n            }\n          },\n          {\n            \"optionID\": \"B\",\n            \"optionTitle\": \"The Corporate Research Facility\",\n            \"details\": {\n              \"Setting\": \"A state-of-the-art research station on the edge of known space, where cutting-edge technology meets corporate secrecy and political intrigue.\",\n              \"Atmosphere\": \"Cold, sterile efficiency contrasted with hidden corruption, where the pursuit of knowledge battles against the pursuit of profit.\"\n            }\n          },\n          {\n            \"optionID\": \"C\",\n            \"optionTitle\": \"The Quantum Nexus\",\n            \"details\": {\n              \"Setting\": \"A space station that exists in multiple dimensions simultaneously, where the laws of physics bend and reality itself becomes fluid.\",\n              \"Atmosphere\": \"Mind-bending surrealism mixed with scientific wonder, where the impossible becomes possible and the protagonist must question their own perception of reality.\"\n            }\n          }\n        ]\n      },\n      {\n        \"categoryID\": \"soul\",\n        \"categoryTitle\": \"The Soul (Theme & Tone)\",\n        \"options\": [\n          {\n            \"optionID\": \"A\",\n            \"optionTitle\": \"The Burden of Knowledge\",\n            \"details\": {\n              \"Theme\": \"The weight of responsibility that comes with profound knowledge and the moral implications of sharing or withholding information that could change the world.\",\n              \"Tone\": \"Contemplative and philosophical, with moments of wonder and dread, exploring the ethical dimensions of discovery and the price of enlightenment.\"\n            }\n          },\n          {\n            \"optionID\": \"B\",\n            \"optionTitle\": \"The Human Connection\",\n            \"details\": {\n              \"Theme\": \"The fundamental need for connection and understanding, both between individuals and across species, and how technology can either bridge or widen the gaps between us.\",\n              \"Tone\": \"Hopeful yet melancholic, balancing the vastness of space with the intimacy of human relationships, finding meaning in the cosmic scale.\"\n            }\n          },\n          {\n            \"optionID\": \"C\",\n            \"optionTitle\": \"The Nature of Reality\",\n            \"details\": {\n              \"Theme\": \"The fluid nature of truth and reality, and how our understanding of the universe is constantly being rewritten by new discoveries.\",\n              \"Tone\": \"Mind-bending and existential, blending scientific rigor with philosophical wonder, challenging the reader's perception of what is real and what is possible.\"\n            }\n          }\n        ]\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "Missing Input Error",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"desiredLength and coreIdea are required\",\n  \"example\": { \n    \"desiredLength\": \"40 minutes\",\n    \"coreIdea\": \"A detective discovers a conspiracy...\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "5. Streaming Pipeline (Real-time)",
           "request": {
             "method": "POST",
             "header": [
@@ -181,8 +246,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/story-to-scenes/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "story-to-scenes", "stream"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "story-to-scenes",
+                "stream"
+              ]
             },
             "description": "Server-Sent Events (SSE) endpoint for real-time progress updates during the workflow execution. Useful for long-running operations with frontend progress indicators."
           },
@@ -209,8 +280,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/story-to-scenes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "story-to-scenes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "story-to-scenes"
+              ]
             }
           }
         },
@@ -230,8 +306,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/story-to-scenes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "story-to-scenes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "story-to-scenes"
+              ]
             }
           }
         },
@@ -251,8 +332,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/story-to-scenes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "story-to-scenes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "story-to-scenes"
+              ]
             }
           }
         },
@@ -272,8 +358,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/story-to-scenes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "story-to-scenes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "story-to-scenes"
+              ]
             }
           }
         },
@@ -293,8 +384,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/story-to-scenes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "story-to-scenes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "story-to-scenes"
+              ]
             }
           }
         },
@@ -314,8 +410,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/story-to-scenes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "story-to-scenes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "story-to-scenes"
+              ]
             }
           }
         }

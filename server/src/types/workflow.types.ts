@@ -87,3 +87,25 @@ export interface WriteEpisodeOutput {
     }>;
   }>;
 }
+
+export interface SummaryInput {
+  desiredLength: string;
+  coreIdea: string;
+}
+
+export interface SummaryOutput {
+  userInputAnalysis: {
+    requestedLength: string;
+    coreIdea: string;
+    analysisNotes: string;
+  };
+  storyConstructionMenu: Array<{
+    categoryID: 'protagonist' | 'conflict' | 'stage' | 'soul';
+    categoryTitle: string;
+    options: Array<{
+      optionID: string;
+      optionTitle: string;
+      details: Record<string, string>;
+    }>;
+  }>;
+}

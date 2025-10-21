@@ -12,4 +12,8 @@ router.get('/workflows',
 router.get('/my-workflow-runs', requireAuth,
   asyncHandler(workflowController.getMyWorkflowRuns));
 
+// Public endpoint - Execute summary workflow
+router.post('/summary', requireAuth,
+  asyncHandler(workflowController.executeSummary));
+
 export default router;

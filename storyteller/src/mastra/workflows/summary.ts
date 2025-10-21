@@ -107,24 +107,33 @@ const generateStoryConstructionMenuStep = createStep({
               "optionID": "A",
               "optionTitle": "Title for stage option A",
               "details": {
-                "Setting": "Description of the world/setting",
-                "Atmosphere": "Description of the atmosphere and mood"
+                "Location": "Specific city, country/region",
+                "Time Period": "Exact year or era",
+                "Cultural Context": "Social norms, technology level, political climate",
+                "Physical Environment": "Climate, architecture, geography",
+                "Atmosphere": "Overall mood and feeling of the setting"
               }
             },
             {
               "optionID": "B",
               "optionTitle": "Title for stage option B",
               "details": {
-                "Setting": "Description of the world/setting",
-                "Atmosphere": "Description of the atmosphere and mood"
+                "Location": "Specific city, country/region",
+                "Time Period": "Exact year or era",
+                "Cultural Context": "Social norms, technology level, political climate",
+                "Physical Environment": "Climate, architecture, geography",
+                "Atmosphere": "Overall mood and feeling of the setting"
               }
             },
             {
               "optionID": "C",
               "optionTitle": "Title for stage option C",
               "details": {
-                "Setting": "Description of the world/setting",
-                "Atmosphere": "Description of the atmosphere and mood"
+                "Location": "Specific city, country/region",
+                "Time Period": "Exact year or era",
+                "Cultural Context": "Social norms, technology level, political climate",
+                "Physical Environment": "Climate, architecture, geography",
+                "Atmosphere": "Overall mood and feeling of the setting"
               }
             }
           ]
@@ -168,9 +177,13 @@ const generateStoryConstructionMenuStep = createStep({
     2. **The Conflict**: Outline 2-3 potential central conflicts that could drive the plot, 
       specifying if they are internal (personal struggle), external (physical obstacle or villain), 
       or a combination.
-    3. **The Stage**: Suggest 2-3 different settings or worlds where the story could take place, 
-      each paired with a corresponding atmosphere (e.g., "A mist-shrouded Victorian London, 
-      creating an atmosphere of mystery and dread").
+    3. **The Stage**: Suggest 2-3 different settings with specific details including:
+      - Exact location (city, country/region)
+      - Time period (year or era)
+      - Cultural context (social norms, technology level, political climate)
+      - Physical environment (climate, architecture, geography)
+      - Atmosphere and mood
+      Example: "Modern-day Tokyo, Japan (2024) - A bustling metropolis where ancient traditions clash with cutting-edge technology, set against a backdrop of neon-lit streets and traditional temples, creating an atmosphere of technological wonder mixed with cultural tension."
     4. **The Soul**: Offer 2-3 potential themes or central messages the story could explore, 
       along with a matching tone (e.g., "A theme of betrayal, told with a cynical and gritty tone").
 

@@ -3,6 +3,7 @@ import { AuthenticatedRequest, WorkflowInfo } from '../types';
 import { createSupabaseClient } from '../services/supabase.service';
 import { DatabaseService } from '../services/database.service';
 import { ResponseUtil } from '../utils/response';
+import { workflowService } from '../services/workflow.service';
 
 export class WorkflowController {
   async getWorkflows(req: Request, res: Response) {
@@ -42,6 +43,18 @@ export class WorkflowController {
         },
         output: { fullEpisode: 'string', scenesWithPrompts: 'array' },
       },
+      summary: {
+        id: 'summary-workflow',
+        description: 'Generates a structured menu of story choices using the Storyteller\'s Compass framework',
+        input: {
+          desiredLength: 'string (e.g., 3, 5, 10, 40 minutes)',
+          coreIdea: 'string (brief story summary)',
+        },
+        output: {
+          userInputAnalysis: 'object',
+          storyConstructionMenu: 'array of story categories with options'
+        },
+      },
     };
 
     return ResponseUtil.success(res, workflows);
@@ -56,6 +69,25 @@ export class WorkflowController {
     const runs = await dbService.getUserWorkflowRuns(limit);
 
     return ResponseUtil.success(res, runs);
+  }
+
+  async executeSummary(req: Request, res: Response) {
+    const { desiredLength, coreIdea } = req.body;
+
+    if (!desiredLength || !coreIdea) {
+      return ResponseUtil.error(res, 'desiredLength and coreIdea are required', 400);
+    }
+
+    try {
+      const result = await workflowService.generateSummary({
+        desiredLength,
+        coreIdea,
+      });
+
+      return ResponseUtil.success(res, result);
+    } catch (error: any) {
+      return ResponseUtil.error(res, error.message, 500);
+    }
   }
 }
 
