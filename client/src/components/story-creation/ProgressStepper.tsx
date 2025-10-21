@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
 interface Step {
@@ -34,7 +35,7 @@ export function ProgressStepper({ currentStep }: ProgressStepperProps) {
     const currentIndex = steps.findIndex(step => step.id === currentStep);
 
     return (
-        <div className="w-full max-w-3xl mx-auto mb-8">
+        <div className="w-full max-w-3xl mx-auto mb-6 sm:mb-8 px-2 sm:px-0">
             <div className="flex items-center justify-between">
                 {steps.map((step, index) => {
                     const isCompleted = index < currentIndex;
@@ -45,9 +46,9 @@ export function ProgressStepper({ currentStep }: ProgressStepperProps) {
                         <div key={step.id} className="flex items-center flex-1">
                             <div className="flex flex-col items-center flex-1">
                                 {/* Step Circle */}
-                                <div
+                                <motion.div
                                     className={`
-                                        w-10 h-10 rounded-full flex items-center justify-center
+                                        w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center
                                         transition-all duration-300 border-2
                                         ${isCompleted
                                             ? 'bg-primary-accent border-primary-accent text-white'
@@ -56,19 +57,34 @@ export function ProgressStepper({ currentStep }: ProgressStepperProps) {
                                                 : 'bg-card-bg border-border text-text-secondary'
                                         }
                                     `}
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: index * 0.1, type: 'spring', stiffness: 200 }}
+                                    whileHover={{ scale: 1.1 }}
                                 >
                                     {isCompleted ? (
-                                        <Check className="h-5 w-5" />
+                                        <motion.div
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{ type: 'spring', stiffness: 200 }}
+                                        >
+                                            <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                                        </motion.div>
                                     ) : (
-                                        <span className="text-sm font-semibold">{index + 1}</span>
+                                        <span className="text-xs sm:text-sm font-semibold">{index + 1}</span>
                                     )}
-                                </div>
+                                </motion.div>
 
                                 {/* Step Label */}
-                                <div className="text-center mt-2">
+                                <motion.div
+                                    className="text-center mt-1 sm:mt-2"
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 + 0.1 }}
+                                >
                                     <p
                                         className={`
-                                            text-sm font-medium
+                                            text-xs sm:text-sm font-medium
                                             ${isCurrent || isCompleted
                                                 ? 'text-foreground'
                                                 : 'text-text-secondary'
@@ -77,24 +93,23 @@ export function ProgressStepper({ currentStep }: ProgressStepperProps) {
                                     >
                                         {step.title}
                                     </p>
-                                    <p className="text-xs text-text-secondary mt-0.5">
+                                    <p className="hidden sm:block text-xs text-text-secondary mt-0.5">
                                         {step.description}
                                     </p>
-                                </div>
+                                </motion.div>
                             </div>
 
                             {/* Connector Line */}
                             {index < steps.length - 1 && (
-                                <div
-                                    className={`
-                                        h-0.5 flex-1 mx-2 -mt-8
-                                        transition-all duration-300
-                                        ${isCompleted
-                                            ? 'bg-primary-accent'
-                                            : 'bg-border'
-                                        }
-                                    `}
-                                />
+                                <div className="relative flex-1 mx-1 sm:mx-2 -mt-6 sm:-mt-8">
+                                    <div className="h-0.5 w-full bg-border" />
+                                    <motion.div
+                                        className="absolute top-0 left-0 h-0.5 bg-primary-accent"
+                                        initial={{ width: '0%' }}
+                                        animate={{ width: isCompleted ? '100%' : '0%' }}
+                                        transition={{ duration: 0.5, delay: 0.2 }}
+                                    />
+                                </div>
                             )}
                         </div>
                     );

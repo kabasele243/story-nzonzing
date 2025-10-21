@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStoryCreationStore } from '@/stores/useStoryCreationStore';
 import { generateSummary } from '@/lib/api/services/summary.service';
 import { generateStory } from '@/lib/api/services/storymaker.service';
@@ -100,38 +101,61 @@ export default function CreateStoryPage() {
     return (
         <div className="min-h-screen bg-background">
             <ThemeToggle />
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 py-4 sm:py-8">
                 <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold text-foreground mb-4">
+                    <motion.div
+                        className="text-center mb-6 sm:mb-8"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 sm:mb-4">
                             Create Your Story
                         </h1>
-                        <p className="text-lg text-text-secondary">
+                        <p className="text-base sm:text-lg text-text-secondary px-4">
                             Start with an idea, explore creative options, and generate your perfect story
                         </p>
-                    </div>
+                    </motion.div>
 
                     <ProgressStepper currentStep={currentStep} />
 
-                    {currentStep === 'form' && (
-                        <StoryCreationForm
-                            coreIdea={coreIdea}
-                            desiredLength={desiredLength}
-                            onCoreIdeaChange={setCoreIdea}
-                            onDesiredLengthChange={setDesiredLength}
-                            onGenerateMenu={handleGenerateMenu}
-                            isLoading={isLoading}
-                            error={error}
-                        />
-                    )}
+                    <AnimatePresence mode="wait">
+                        {currentStep === 'form' && (
+                            <motion.div
+                                key="form"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <StoryCreationForm
+                                    coreIdea={coreIdea}
+                                    desiredLength={desiredLength}
+                                    onCoreIdeaChange={setCoreIdea}
+                                    onDesiredLengthChange={setDesiredLength}
+                                    onGenerateMenu={handleGenerateMenu}
+                                    isLoading={isLoading}
+                                    error={error}
+                                />
+                            </motion.div>
+                        )}
 
-                    {currentStep === 'result' && (
-                        <StoryResult
-                            story={generatedStory}
-                            isLoading={isLoading}
-                            onStartOver={handleStartOver}
-                        />
-                    )}
+                        {currentStep === 'result' && (
+                            <motion.div
+                                key="result"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <StoryResult
+                                    story={generatedStory}
+                                    isLoading={isLoading}
+                                    onStartOver={handleStartOver}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 

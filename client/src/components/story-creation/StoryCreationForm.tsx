@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -67,9 +68,13 @@ export function StoryCreationForm({
     };
 
     return (
-        <Card className="p-8 max-w-2xl mx-auto">
+        <Card className="p-4 sm:p-8 max-w-2xl mx-auto">
             <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                >
                     <label htmlFor="coreIdea" className="block text-sm font-medium text-foreground mb-2">
                         What's your story idea?
                     </label>
@@ -77,44 +82,59 @@ export function StoryCreationForm({
                     {/* Template Pills */}
                     <div className="mb-3 flex flex-wrap gap-2">
                         <span className="text-xs text-text-secondary">Try a template:</span>
-                        {storyTemplates.map((template) => (
-                            <button
+                        {storyTemplates.map((template, index) => (
+                            <motion.button
                                 key={template.id}
                                 type="button"
                                 onClick={() => setLocalCoreIdea(template.idea)}
-                                className="px-3 py-1 text-xs rounded-full bg-primary-accent/10 hover:bg-primary-accent/20 text-primary-accent border border-primary-accent/20 transition-colors"
+                                className="px-3 py-1 text-xs rounded-full bg-primary-accent/10 hover:bg-primary-accent/20 text-primary-accent border border-primary-accent/20 transition-all hover:scale-105"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 + index * 0.05 }}
                             >
                                 {template.title}
-                            </button>
+                            </motion.button>
                         ))}
                     </div>
 
-                    <textarea
+                    <motion.textarea
                         id="coreIdea"
                         value={localCoreIdea}
                         onChange={(e) => setLocalCoreIdea(e.target.value)}
                         placeholder="A detective discovers that the AI she's been hunting is actually her own consciousness from the future..."
-                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary-accent focus:border-transparent bg-card-bg text-foreground placeholder-text-secondary"
+                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary-accent focus:border-transparent bg-card-bg text-foreground placeholder-text-secondary transition-all"
                         rows={4}
                         required
+                        whileFocus={{ scale: 1.01 }}
                     />
                     <p className="text-sm text-text-secondary mt-1">
                         Describe the core concept, characters, or situation that interests you
                     </p>
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
                     <label htmlFor="desiredLength" className="block text-sm font-medium text-foreground mb-2">
                         How long should your story be?
                     </label>
-                    <div className="grid grid-cols-2 gap-3">
-                        {lengthOptions.map((option) => (
-                            <label
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                        {lengthOptions.map((option, index) => (
+                            <motion.label
                                 key={option.value}
-                                className={`relative flex cursor-pointer rounded-lg p-4 border-2 transition-all ${desiredLength === option.value
-                                    ? 'border-primary-accent bg-primary-accent/10'
-                                    : 'border-border hover:border-hover'
+                                className={`relative flex cursor-pointer rounded-lg p-3 sm:p-4 border-2 transition-all ${desiredLength === option.value
+                                    ? 'border-primary-accent bg-primary-accent/10 scale-105'
+                                    : 'border-border hover:border-primary-accent/50 hover:scale-102'
                                     }`}
+                                whileHover={{ scale: desiredLength === option.value ? 1.05 : 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 + index * 0.05 }}
                             >
                                 <input
                                     type="radio"
@@ -124,36 +144,48 @@ export function StoryCreationForm({
                                     onChange={(e) => onDesiredLengthChange(e.target.value)}
                                     className="sr-only"
                                 />
-                                <div className="flex flex-col items-center text-center">
+                                <div className="flex flex-col items-center text-center w-full">
                                     <span className="text-sm font-medium text-foreground">
                                         {option.label}
                                     </span>
                                 </div>
-                            </label>
+                            </motion.label>
                         ))}
                     </div>
-                </div>
+                </motion.div>
 
                 {error && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
+                    >
                         <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
-                    </div>
+                    </motion.div>
                 )}
 
-                <Button
-                    type="submit"
-                    disabled={isLoading || !localCoreIdea.trim()}
-                    className="w-full bg-primary-accent hover:bg-primary-accent/90 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
                 >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                            Generating Story Options...
-                        </div>
-                    ) : (
-                        'Generate Story Options'
-                    )}
-                </Button>
+                    <motion.button
+                        type="submit"
+                        disabled={isLoading || !localCoreIdea.trim()}
+                        className="w-full bg-primary-accent hover:bg-primary-accent/90 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        whileHover={{ scale: isLoading || !localCoreIdea.trim() ? 1 : 1.02 }}
+                        whileTap={{ scale: isLoading || !localCoreIdea.trim() ? 1 : 0.98 }}
+                    >
+                        {isLoading ? (
+                            <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                Generating Story Options...
+                            </div>
+                        ) : (
+                            'Generate Story Options'
+                        )}
+                    </motion.button>
+                </motion.div>
             </form>
         </Card>
     );
