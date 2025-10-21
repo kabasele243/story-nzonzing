@@ -7,6 +7,7 @@ import { sceneGeneratorWorkflow } from './workflows/scene-generator';
 import { storyToScenesWorkflow } from './workflows/story-to-scenes';
 import { createSeriesWorkflow } from './workflows/create-series';
 import { writeEpisodeWorkflow } from './workflows/write-episode';
+import { summaryWorkflow } from './workflows/summary';
 import { llmAgent } from './agents/llm-agent';
 
 export const mastra = new Mastra({
@@ -16,6 +17,7 @@ export const mastra = new Mastra({
     storyToScenesWorkflow,
     createSeriesWorkflow,
     writeEpisodeWorkflow,
+    summaryWorkflow,
   },
   agents: {
     llmAgent,
@@ -30,10 +32,10 @@ export const mastra = new Mastra({
   }),
   telemetry: {
     // Telemetry is deprecated and will be removed in the Nov 4th release
-    enabled: false, 
+    enabled: false,
   },
   observability: {
     // Enables DefaultExporter and CloudExporter for AI tracing
-    default: { enabled: true }, 
+    default: { enabled: true },
   },
 });
